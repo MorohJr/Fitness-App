@@ -1,0 +1,30 @@
+// נקודת הכניסה: הפעלת הנתונים, אחסון קבוע, Service Worker והממשק
+import { render } from 'preact';
+import { registerSW } from 'virtual:pwa-register';
+import './ui/theme/theme.css';
+import { App } from './ui/App';
+import { initData } from './data/init';
+import { getMeta, setMeta } from './data/repos/meta';
+import { updateStore } from './ui/store';
+
+async function start() {
+  await initData();
+  // בקשת אחסון קבוע בהפעלה הראשונה (3.4)
+  if (!(await getMeta('persistRequested')) && navigator.storage?.persist) {
+    await navigator.storage.persist().catch(() => false);
+    await setMeta('persistRequested', true);
+  }
+  render(<App />, document.getElementById('app')!);
+}
+
+// גרסה חדשה: באנר עם כפתור רענון, בלי רענון אוטומטי (3.6)
+const updateSW = registerSW({
+  onNeedRefresh() {
+    updateStore.set(() => updateSW(true));
+  }
+});
+
+start().catch((e) => {
+  console.error(e);
+  document.getElementById('app')!.textContent = 'שגיאה בפתיחת האפליקציה: ' + (e?.message ?? e);
+});

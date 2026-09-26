@@ -59,6 +59,12 @@ describe('✅ בדיקת קבלה: שינוי יעד קלורי לא משנה י
     expect((await getDayLog('2026-09-28'))?.targets.proteinG).toBe(162);
   });
 
+  it('משקל ידני חדש מעדכן מיד את מאקרו היום', async () => {
+    await saveTargets(TARGETS);
+    await updateProfile({ manualWeightKg: 90 });
+    expect((await getDayLog('2026-09-27'))?.targets.proteinG).toBe(162);
+  });
+
   it('שלב חדש מהיום משנה את היום ולא את אתמול', async () => {
     await saveTargets(TARGETS);
     setNow('2026-09-28');

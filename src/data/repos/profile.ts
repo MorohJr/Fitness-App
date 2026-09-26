@@ -3,6 +3,7 @@ import type { Profile } from '../../domain/types';
 import { getDb } from '../db';
 import { DEFAULT_EQUIPMENT, DEFAULT_LOCATIONS, DEFAULT_SETTINGS } from '../seed/defaults';
 import { newBase, touched } from './base';
+import { refreshToday } from './dayLogs';
 
 export function defaultProfile(): Profile {
   return {
@@ -36,5 +37,7 @@ export async function updateProfile(patch: Partial<Omit<Profile, 'id' | 'created
   const p = await ensureProfile();
   const next = touched<Profile>(p, patch as Partial<Profile>);
   await getDb().data('profile').put(next);
+  // משקל ידני משפיע על יעדי היום (R-NUT-2). ימים סגורים לא משתנים (R-VER-3)
+  await refreshToday();
   return next;
 }
