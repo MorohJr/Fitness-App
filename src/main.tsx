@@ -1,6 +1,15 @@
 // נקודת הכניסה: הפעלת הנתונים, אחסון קבוע, Service Worker והממשק
 import { render } from 'preact';
 import { registerSW } from 'virtual:pwa-register';
+// גופן Rubik שמור באפליקציה, עובד בלי אינטרנט (3.7)
+import '@fontsource/rubik/hebrew-400.css';
+import '@fontsource/rubik/hebrew-500.css';
+import '@fontsource/rubik/hebrew-700.css';
+import '@fontsource/rubik/hebrew-800.css';
+import '@fontsource/rubik/latin-400.css';
+import '@fontsource/rubik/latin-500.css';
+import '@fontsource/rubik/latin-700.css';
+import '@fontsource/rubik/latin-800.css';
 import './ui/theme/theme.css';
 import { App } from './ui/App';
 import { initData } from './data/init';

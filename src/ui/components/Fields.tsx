@@ -1,6 +1,7 @@
 // שדות טופס משותפים. כל שדה בגובה 44 פיקסלים לפחות (3.7)
 import type { ComponentChildren } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
+import { Icon } from './Icon';
 
 interface FieldProps {
   label: string;
@@ -116,7 +117,7 @@ export function Segmented<T extends string>(props: { value: T; options: { value:
 export function BackLink({ to = '/settings', label = 'הגדרות' }: { to?: string; label?: string }) {
   return (
     <a class="back" href={`#${to}`}>
-      › {label}
+      <Icon name="back" /> {label}
     </a>
   );
 }

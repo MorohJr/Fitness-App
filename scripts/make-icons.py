@@ -1,8 +1,8 @@
 # יוצר את אייקוני האפליקציה (PNG) ב-public/. מריצים: npm run icons
 from PIL import Image, ImageDraw
 
-BG = (15, 17, 21)
-FG = (74, 222, 128)
+BG = (10, 10, 10)
+FG = (215, 255, 58)
 
 def draw(size, pad_ratio):
     s = 4 * size  # ציור בגודל כפול ארבע והקטנה, לקצוות חלקים

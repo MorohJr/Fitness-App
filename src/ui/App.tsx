@@ -6,6 +6,7 @@ import { getProfile } from '../data/repos/profile';
 import { applyTheme } from './theme/applyTheme';
 import { Banners } from './components/Banners';
 import { Toast } from './components/Toast';
+import { Icon, type IconName } from './components/Icon';
 import { DashboardScreen } from './screens/DashboardScreen';
 import { Placeholder } from './screens/Placeholder';
 import { SettingsHome } from './screens/settings/SettingsHome';
@@ -16,13 +17,13 @@ import { PhasesScreen } from './screens/settings/PhasesScreen';
 import { WeekPlanScreen } from './screens/settings/WeekPlanScreen';
 import { BackupScreen } from './screens/settings/BackupScreen';
 
-const TABS = [
-  { path: '/dashboard', icon: '📊', label: 'דשבורד' },
-  { path: '/today', icon: '📝', label: 'היום' },
-  { path: '/workout', icon: '🏋️', label: 'אימון' },
-  { path: '/nutrition', icon: '🥗', label: 'תזונה' },
-  { path: '/body', icon: '📈', label: 'גוף ושיאים' },
-  { path: '/settings', icon: '⚙️', label: 'הגדרות' }
+const TABS: { path: string; icon: IconName; label: string }[] = [
+  { path: '/dashboard', icon: 'dashboard', label: 'דשבורד' },
+  { path: '/today', icon: 'today', label: 'היום' },
+  { path: '/workout', icon: 'workout', label: 'אימון' },
+  { path: '/nutrition', icon: 'nutrition', label: 'תזונה' },
+  { path: '/body', icon: 'body', label: 'גוף ושיאים' },
+  { path: '/settings', icon: 'settings', label: 'הגדרות' }
 ];
 
 function screenFor(path: string) {
@@ -54,9 +55,9 @@ export function App() {
     <div class="app">
       <nav class="nav" aria-label="ניווט ראשי">
         {TABS.map((t) => (
-          <a key={t.path} href={`#${t.path}`} aria-current={path === t.path || path.startsWith(t.path + '/') ? 'page' : undefined}>
-            <span class="ico" aria-hidden="true">{t.icon}</span>
-            <span>{t.label}</span>
+          <a key={t.path} href={`#${t.path}`} aria-label={t.label} title={t.label} aria-current={path === t.path || path.startsWith(t.path + '/') ? 'page' : undefined}>
+            <Icon name={t.icon} />
+            <span class="txt">{t.label}</span>
           </a>
         ))}
       </nav>
