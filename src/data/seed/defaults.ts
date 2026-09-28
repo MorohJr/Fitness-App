@@ -8,12 +8,13 @@ export const DEFAULT_EQUIPMENT: EquipmentItem[] = [
   { id: 'parallel-bars', name: 'מקבילים' },
   { id: 'bench', name: 'ספסל' },
   { id: 'bands', name: 'גומיות התנגדות' },
-  { id: 'sliders', name: 'סליידרים' }
+  { id: 'sliders', name: 'סליידרים (או מגבת על רצפה חלקה)' },
+  { id: 'elevated', name: 'משטח מוגבה יציב (ספסל, כיסא, מדרגה)' }
 ];
 
 export const DEFAULT_LOCATIONS: LocationSetup[] = [
   { id: 'home', name: 'בית', enabled: true, equipmentIds: ['dumbbells-10', 'dumbbell-bar'] },
-  { id: 'outdoor', name: 'חוץ', enabled: true, equipmentIds: ['pullup-bar', 'parallel-bars', 'bench'] }
+  { id: 'outdoor', name: 'חוץ', enabled: true, equipmentIds: ['pullup-bar', 'parallel-bars', 'bench', 'elevated'] }
 ];
 
 export const DEFAULT_SETTINGS: AppSettings = {

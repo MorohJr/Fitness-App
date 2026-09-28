@@ -138,3 +138,12 @@ describe('מחיקת כל הנתונים (3.5)', () => {
     expect(c.profile).toBe(1);
   });
 });
+
+describe('גיבוי מגרסה 1 (לפני שלב 2)', () => {
+  it('עובר המרה ונקרא', () => {
+    const v1 = zipSync({ 'data.json': strToU8(JSON.stringify({ app: 'fitness-app', schemaVersion: 1, exportedAt: '2026-09-27T10:00:00Z', includesPhotos: false, tables: { profile: [{ id: 'a' }] } })) });
+    const p = readBackup(v1);
+    expect(p.data.schemaVersion).toBe(2);
+    expect(p.counts.profile).toBe(1);
+  });
+});

@@ -13,11 +13,11 @@ const slot = (family: FamilyId, priority: TemplateSlot['priority']): TemplateSlo
   sets: priority === 'accessory' ? 2 : 3
 });
 
-/** תבניות ברירת מחדל (נספח ב'), עם מזהים קבועים */
+/** תבניות ברירת מחדל (נספח ב'), עם מזהים קבועים. משבצות הליבה לפי המיפוי בנספח ב' */
 export const DEFAULT_TEMPLATES: SeedTemplate[] = [
   {
     id: 'tpl-push', name: 'דחיקה', kind: 'training',
-    slots: [slot('horizontalPush', 'main'), slot('verticalPush', 'main'), slot('dips', 'secondary'), slot('triceps', 'accessory'), slot('core', 'accessory')]
+    slots: [slot('horizontalPush', 'main'), slot('verticalPush', 'main'), slot('dips', 'secondary'), slot('triceps', 'accessory'), slot('plank', 'accessory')]
   },
   {
     id: 'tpl-pull', name: 'משיכה', kind: 'training',
@@ -25,15 +25,15 @@ export const DEFAULT_TEMPLATES: SeedTemplate[] = [
   },
   {
     id: 'tpl-legs-core', name: 'רגליים וליבה', kind: 'training',
-    slots: [slot('squat', 'main'), slot('hipHinge', 'main'), slot('singleLeg', 'secondary'), slot('calves', 'accessory'), slot('core', 'accessory'), slot('core', 'accessory')]
+    slots: [slot('squat', 'main'), slot('hipHinge', 'main'), slot('singleLeg', 'secondary'), slot('calves', 'accessory'), slot('coreFront', 'accessory'), slot('coreSide', 'accessory')]
   },
   {
     id: 'tpl-upper', name: 'פלג גוף עליון', kind: 'training',
-    slots: [slot('horizontalPush', 'main'), slot('verticalPull', 'main'), slot('verticalPush', 'secondary'), slot('horizontalPull', 'secondary'), slot('core', 'accessory')]
+    slots: [slot('horizontalPush', 'main'), slot('verticalPull', 'main'), slot('verticalPush', 'secondary'), slot('horizontalPull', 'secondary'), slot('coreFront', 'accessory')]
   },
   {
     id: 'tpl-lower-core', name: 'פלג גוף תחתון וליבה', kind: 'training',
-    slots: [slot('singleLeg', 'main'), slot('hamstring', 'main'), slot('hipHinge', 'secondary'), slot('calves', 'accessory'), slot('core', 'accessory'), slot('core', 'accessory')]
+    slots: [slot('singleLeg', 'main'), slot('hamstring', 'main'), slot('hipHinge', 'secondary'), slot('calves', 'accessory'), slot('coreSide', 'accessory'), slot('plank', 'accessory')]
   },
   // יום התאוששות פעילה (R-DAY-2): בלי עבודת כוח
   { id: 'tpl-recovery', name: 'מוביליטי ויציבה', kind: 'recovery', slots: [] }

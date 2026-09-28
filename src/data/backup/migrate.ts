@@ -11,7 +11,10 @@ export interface BackupData {
 
 /** מפתח n = המרה מגרסה n לגרסה n+1. כשהסכמה משתנה, מוסיפים כאן המרה */
 export type Migrations = Record<number, (data: BackupData) => BackupData>;
-export const MIGRATIONS: Migrations = {};
+export const MIGRATIONS: Migrations = {
+  // 1 ← 2: שינוי באינדקס התרגילים בלבד. בגרסה 1 לא היו תרגילים, והמאגר נטען מחדש אחרי הייבוא
+  1: (d) => d
+};
 
 export function migrateBackup(data: BackupData, migrations: Migrations = MIGRATIONS, target = SCHEMA_VERSION): BackupData {
   if (data.schemaVersion > target) {

@@ -138,3 +138,99 @@ export interface WeighIn {
   date: ISODate;
   weightKg: number;
 }
+
+// ===== שלב 2: תרגילים, פציעות ואימונים (4.2) =====
+
+export type ExerciseStatus = 'red' | 'yellow' | 'green';
+export type MeasureType = 'reps' | 'time' | 'repsLoad';
+
+export interface FamilyLevel {
+  family: string;
+  level: number;
+}
+
+export interface Exercise extends BaseRecord {
+  name: string;
+  families: FamilyLevel[];
+  /** לאינדקס: מזהי המשפחות */
+  familyIds: string[];
+  /** null למשפחות בלי סטטוס (יציבה, לסת, מוביליטי) */
+  status: ExerciseStatus | null;
+  category: string;
+  primaryMuscles: string[];
+  secondaryMuscles: string[];
+  /** ציוד שכולו נדרש */
+  equipment: string[];
+  locations: LocationId[];
+  measure: MeasureType;
+  unilateral: boolean;
+  targetMin: number;
+  targetMax: number;
+  secondsPerSet: number;
+  restSec: number;
+  tempo: string;
+  cues: string[];
+  safety: string;
+  custom: boolean;
+}
+
+export type InjuryStatus = 'active' | 'recovering' | 'healed';
+
+export interface Injury extends BaseRecord {
+  area: string;
+  pain: number;
+  status: InjuryStatus;
+  startDate: ISODate;
+  healedDate: ISODate | null;
+  notes: string;
+  blockedExercises: string[];
+  blockedFamilies: string[];
+  blockedMuscles: string[];
+}
+
+export type WorkoutStatus = 'planned' | 'inProgress' | 'completed' | 'skipped';
+
+export interface Workout extends BaseRecord {
+  date: ISODate;
+  /** 'test' = מבחן פתיחה */
+  kind: 'regular' | 'test';
+  dayType: DayType | null; // 📸
+  templateName: string | null; // 📸
+  location: LocationId;
+  isDeload: boolean; // 📸
+  recoveryScore: number | null; // 📸
+  status: WorkoutStatus;
+  startedAt: string | null;
+  endedAt: string | null;
+  blockMinutes: Record<string, number>;
+  feeling: number | null;
+  notes: string;
+}
+
+export interface WorkoutExercise extends BaseRecord {
+  workoutId: string;
+  exerciseId: string;
+  exerciseName: string; // 📸
+  family: string;
+  level: number; // 📸
+  statusAtTime: ExerciseStatus | null; // 📸
+  role: 'work' | 'technique' | 'warmup';
+  targetSets: number;
+  targetMin: number;
+  targetMax: number;
+  tempo: string;
+  targetToday: string;
+  order: number;
+}
+
+export type Side = 'right' | 'left' | 'none';
+
+export interface SetLog extends BaseRecord {
+  workoutExerciseId: string;
+  setNumber: number;
+  side: Side;
+  reps: number | null;
+  seconds: number | null;
+  load: string | null;
+  rpe: number | null;
+}
