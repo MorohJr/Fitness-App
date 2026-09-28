@@ -100,7 +100,7 @@ async function writeTables(tables: Record<string, Row[]>, replacePhotos: boolean
 export async function importBackup(preview: ImportPreview): Promise<void> {
   const db = getDb();
   const snapshot = await readAllTables(true);
-  await db.undo.put({ key: UNDO_KEY, createdAt: clock.iso(), tables: snapshot });
+  await db.undo.put({ key: UNDO_KEY, createdAt: clock.iso(), tables: snapshot, reason: 'import' } as never);
 
   const tables: Record<string, Row[]> = {};
   for (const name of DATA_TABLE_NAMES) tables[name] = (preview.data.tables[name] ?? []).map((r) => ({ ...r }));
@@ -113,9 +113,30 @@ export async function importBackup(preview: ImportPreview): Promise<void> {
   await writeTables(tables, hasPhotos);
 }
 
-export async function hasUndoImport(): Promise<{ createdAt: string } | null> {
+export type UndoReason = 'import' | 'delete';
+
+export async function hasUndoImport(): Promise<{ createdAt: string; reason: UndoReason } | null> {
   const row = await getDb().undo.get(UNDO_KEY);
-  return row ? { createdAt: row.createdAt } : null;
+  return row ? { createdAt: row.createdAt, reason: (row as { reason?: UndoReason }).reason ?? 'import' } : null;
+}
+
+/** מחיקת כל הנתונים (3.5). המצב הקודם נשמר, ואפשר לבטל */
+export async function deleteAllData(): Promise<void> {
+  const db = getDb();
+  const snapshot = await readAllTables(true);
+  await db.undo.put({ key: UNDO_KEY, createdAt: clock.iso(), tables: snapshot, reason: 'delete' } as never);
+  await writeTables({}, true);
+}
+
+/** כמה רשומות פעילות יש בכל טבלה (תצוגה במסך הגיבוי) */
+export async function countRecords(): Promise<Record<DataTableName, number>> {
+  const db = getDb();
+  const out = {} as Record<DataTableName, number>;
+  for (const name of DATA_TABLE_NAMES) {
+    const rows = (await db.data(name).toArray()) as { deletedAt?: string | null }[];
+    out[name] = rows.filter((r) => !r.deletedAt).length;
+  }
+  return out;
 }
 
 /** "בטל ייבוא": מחזיר בדיוק את המצב שלפני הייבוא */

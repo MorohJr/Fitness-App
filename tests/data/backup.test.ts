@@ -4,7 +4,7 @@ import { getDb, DATA_TABLE_NAMES, useFreshDb } from '../../src/data/db';
 import { saveTargets } from '../../src/data/repos/targets';
 import { savePhase } from '../../src/data/repos/phases';
 import { updateProfile } from '../../src/data/repos/profile';
-import { exportBackup, hasUndoImport, importBackup, readBackup, undoImport } from '../../src/data/backup/backup';
+import { countRecords, deleteAllData, exportBackup, hasUndoImport, importBackup, readBackup, undoImport } from '../../src/data/backup/backup';
 import { migrateBackup, type BackupData } from '../../src/data/backup/migrate';
 import { strToU8, zipSync } from 'fflate';
 
@@ -116,5 +116,25 @@ describe('ייבוא: מקרים נוספים (3.5)', () => {
     expect(out.schemaVersion).toBe(3);
     expect(out.tables.profile[0]).toEqual({ id: 'a', v2: true, v3: true });
     expect(() => migrateBackup(old, {}, 2)).toThrow();
+  });
+});
+
+describe('מחיקת כל הנתונים (3.5)', () => {
+  it('מוחק הכול, וביטול מחזיר בדיוק', async () => {
+    await addPhoto('p1', [4, 2]);
+    const before = await snapshot();
+    await deleteAllData();
+    const c = await countRecords();
+    expect(Object.values(c).every((n) => n === 0)).toBe(true);
+    expect((await hasUndoImport())?.reason).toBe('delete');
+    await undoImport();
+    expect(await snapshot()).toEqual(before);
+    expect(await photoBytes('p1')).toEqual([4, 2]);
+  });
+  it('ספירת רשומות לא סופרת מחוקות', async () => {
+    const c = await countRecords();
+    expect(c.targetVersions).toBe(1);
+    expect(c.phases).toBe(1);
+    expect(c.profile).toBe(1);
   });
 });
