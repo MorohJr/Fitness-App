@@ -61,10 +61,12 @@ export function App() {
           </a>
         ))}
       </nav>
-      <main class="main">
-        <Banners />
-        {screenFor(path)}
-      </main>
+      <div class="main-scroll" id="main-scroll">
+        <main class="main">
+          <Banners />
+          {screenFor(path)}
+        </main>
+      </div>
       <Toast />
     </div>
   );

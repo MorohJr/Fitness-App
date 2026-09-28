@@ -57,7 +57,7 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; }
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
 body {
   background: var(--bg);
   color: var(--text);
@@ -71,13 +71,26 @@ button, input, select { font: inherit; color: inherit; }
 a { color: var(--accent-ink); }
 .num, .stat .v, .big, input[type='number'] { font-variant-numeric: tabular-nums; }
 
-.app { min-height: 100dvh; display: flex; flex-direction: column; }
+/*
+ * מעטפת קבועה: רק אזור התוכן גולל, והניווט הוא חלק מהפריסה ולא position:fixed.
+ * כך הניווט לא "צף" באמצע המסך באייפון אחרי שהמקלדת נסגרת,
+ * והתוכן לא גולל מתחת לשעון ולסוללה.
+ */
+.app {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  padding-top: env(safe-area-inset-top);
+  background: var(--bg);
+}
+.main-scroll {
+  flex: 1; min-height: 0;
+  overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain;
+}
 .main {
-  flex: 1;
   width: 100%;
   max-width: 720px;
   margin: 0 auto;
-  padding: calc(env(safe-area-inset-top) + 14px) 16px calc(var(--nav-h) + env(safe-area-inset-bottom) + 28px);
+  padding: 14px 16px 28px;
 }
 
 /* טיפוגרפיה */
@@ -94,7 +107,7 @@ p { margin: 0 0 10px; }
 
 /* ניווט: בטלפון אייקונים עם נקודה, במחשב עם שמות */
 .nav {
-  position: fixed; inset: auto 0 0 0;
+  order: 2; flex: none;
   height: calc(var(--nav-h) + env(safe-area-inset-bottom));
   padding-bottom: env(safe-area-inset-bottom);
   background: var(--bg);
@@ -114,7 +127,7 @@ p { margin: 0 0 10px; }
 @media (min-width: 900px) {
   .app { flex-direction: row; }
   .nav {
-    position: sticky; top: 0; inset: auto; height: 100dvh; width: 210px; padding: 20px 10px;
+    order: 0; height: 100%; width: 210px; padding: 20px 10px; overflow-y: auto;
     grid-template-columns: 1fr; grid-auto-rows: 50px; gap: 4px; align-content: start;
     border-top: 0; border-inline-end: 1px solid var(--border);
   }
@@ -122,7 +135,6 @@ p { margin: 0 0 10px; }
   .nav a .txt { display: inline; }
   .nav a::after { display: none; }
   .nav a[aria-current='page'] { background: var(--accent); color: var(--on-accent); }
-  .main { padding-bottom: 32px; }
 }
 
 /* כרטיסים ורשימות */

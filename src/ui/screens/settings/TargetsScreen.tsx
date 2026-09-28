@@ -82,6 +82,7 @@ export function TargetsScreen() {
       {log && (
         <div class="card">
           <h2>יעדי היום</h2>
+          {versions.length === 0 && !phase && <div class="alert warn">עוד לא נשמרו יעדים. אשר את המחשבון או לחץ "שמור יעדים" למטה.</div>}
           <TargetsStats t={log.targets} />
           <TargetsNotes t={log.targets} />
         </div>

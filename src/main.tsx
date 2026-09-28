@@ -33,6 +33,14 @@ const updateSW = registerSW({
   }
 });
 
+// אייפון: אחרי סגירת המקלדת הדף לפעמים נשאר מוזז. מחזירים אותו למקום
+document.addEventListener('focusout', () => {
+  setTimeout(() => {
+    const el = document.activeElement;
+    if (!el || !['INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName)) window.scrollTo(0, 0);
+  }, 50);
+});
+
 start().catch((e) => {
   console.error(e);
   document.getElementById('app')!.textContent = 'שגיאה בפתיחת האפליקציה: ' + (e?.message ?? e);

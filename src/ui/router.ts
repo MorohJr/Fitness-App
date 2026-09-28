@@ -8,7 +8,7 @@ export function useRoute(): string {
   useEffect(() => {
     const on = () => {
       setPath(current());
-      window.scrollTo(0, 0);
+      document.getElementById('main-scroll')?.scrollTo(0, 0);
     };
     addEventListener('hashchange', on);
     return () => removeEventListener('hashchange', on);
