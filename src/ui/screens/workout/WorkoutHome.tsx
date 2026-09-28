@@ -21,7 +21,7 @@ import { Icon } from '../../components/Icon';
 import { Segmented } from '../../components/Fields';
 import { SuggestionsList } from '../../components/Suggestions';
 import { navigate } from '../../router';
-import { showToast } from '../../store';
+import { locationStore, showToast, useStore } from '../../store';
 import { unlockAudio } from '../../device';
 
 const mins = (sec: number) => Math.round(sec / 60);
@@ -40,7 +40,8 @@ export function WorkoutHome() {
     const vol = weeklyVolume(history, new Map(exs.map((e) => [e.id, e])), startOfWeek(today));
     return { ready: STRENGTH_FAMILIES.filter((f) => familyReady(exs, f)).length, active, profile, plan, dctx, lastLoc, doneToday, recent, vol, count: exs.length };
   }, [today]);
-  const [loc, setLoc] = useState<LocationId | null>(null);
+  const loc = useStore(locationStore);
+  const setLoc = (l: LocationId) => locationStore.set(l);
   const [likeLast, setLikeLast] = useState(false);
   const [again, setAgain] = useState(false);
   const location: LocationId | null = loc ?? (data ? ((data.lastLoc as LocationId) ?? data.profile?.locations.find((l) => l.enabled)?.id ?? null) : null);

@@ -26,6 +26,8 @@ export interface ToastState {
 export const toastStore = createStore<ToastState | null>(null);
 /** פונקציה שמפעילה את הגרסה החדשה, כשיש כזו (3.6) */
 export const updateStore = createStore<null | (() => void)>(null);
+/** המיקום שנבחר לאימון היום (דשבורד ומסך אימון) */
+export const locationStore = createStore<'home' | 'outdoor' | null>(null);
 
 let seq = 0;
 /** הודעה עם "בטל" ל-5 שניות (3.7) */

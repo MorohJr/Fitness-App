@@ -29,7 +29,11 @@ import { useLive } from '../hooks';
 import { DAY_TYPE_LABELS, PHASE_LABELS, WEEKDAYS, fmtDelta, fmtNum } from '../labels';
 import { SuggestionsList } from '../components/Suggestions';
 import { LineChart } from '../components/LineChart';
-import { showToast } from '../store';
+import { locationStore, showToast, useStore } from '../store';
+import { planWorkout } from '../../data/repos/workouts';
+import { Segmented } from '../components/Fields';
+import { LOCATION_LABELS } from '../labels';
+import type { LocationId } from '../../domain/types';
 
 export function DashboardScreen() {
   const today = clock.today();
@@ -50,6 +54,9 @@ export function DashboardScreen() {
       active, doneToday: todays.find((w) => w.kind === 'regular' && w.status === 'completed'), summary, summaryChecks
     };
   }, [today]);
+  const locSel = useStore(locationStore);
+  const loc: LocationId | null = locSel ?? (data?.profile?.locations.find((l) => l.enabled)?.id ?? null);
+  const preview = useLive(async () => (loc ? planWorkout(today, loc) : null), [today, loc]);
   if (!data) return null;
   const { log, profile, hasTargets, phase, plan, template, exported, testReady, eaten, sups, supTaken, ms, logs, checks, deload, active, doneToday, summary, summaryChecks } = data;
   const profileDone = !!(profile?.sex && profile.birthDate && profile.heightCm);
@@ -151,9 +158,24 @@ export function DashboardScreen() {
           <h2 style={{ margin: 0 }}>האימון של היום</h2>
           <a class="small" href="#/workout">לאימון</a>
         </div>
-        <p style={{ margin: '8px 0 0' }}>
-          {doneToday ? '✓ הושלם' : active ? 'בביצוע' : plan.dayType === 'rest' ? 'מנוחה מלאה' : `${word}${deload ? ' · הורדת עומס' : ''}. בוחרים מיקום במסך האימון`}
+        <p style={{ margin: '8px 0' }}>
+          {doneToday ? '✓ הושלם' : active ? 'בביצוע' : plan.dayType === 'rest' ? 'מנוחה מלאה' : `${word}${deload ? ' · הורדת עומס' : ''}`}
         </p>
+        {!doneToday && !active && plan.dayType !== 'rest' && profile && (
+          <>
+            <Segmented<LocationId>
+              value={loc ?? 'home'}
+              options={profile.locations.filter((l) => l.enabled).map((l) => ({ value: l.id, label: LOCATION_LABELS[l.id] }))}
+              onChange={(l) => locationStore.set(l)}
+            />
+            {preview && (
+              <p class="small muted" style={{ margin: 0 }}>
+                {preview.strength.filter((i) => i.role === 'work').map((i) => i.exercise.name).join(' · ') || 'בלי עבודת כוח'}
+                {' '}· כ-{Math.round(preview.totalSec / 60)} דק'
+              </p>
+            )}
+          </>
+        )}
       </div>
 
       {t && (
