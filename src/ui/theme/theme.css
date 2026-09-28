@@ -272,3 +272,19 @@ input[type='range'] { width: 100%; accent-color: var(--accent); min-height: 44px
 .chips-sel button[aria-pressed='true'] { background: var(--accent); color: var(--on-accent); }
 .progress-line { height: 8px; border-radius: 8px; background: var(--track); overflow: hidden; margin: 8px 0 4px; }
 .progress-line i { display: block; height: 100%; background: var(--accent); }
+
+/* ===== שלב 3 ===== */
+.scale { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
+.scale button { min-height: 40px; border: 0; border-radius: 6px; background: var(--surface-2); color: var(--muted); font-weight: 700; cursor: pointer; padding: 0; }
+.scale button[aria-pressed='true'] { background: var(--accent); color: var(--on-accent); }
+.daynav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.daynav a, .daynav button { min-width: 44px; min-height: 44px; display: grid; place-items: center; border-radius: 10px; background: var(--surface-2); color: var(--text); text-decoration: none; border: 0; font-size: 1.2rem; }
+.water { display: flex; gap: 8px; }
+.water .btn { flex: 1; }
+.bar { height: 10px; border-radius: 6px; background: var(--track); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--accent); border-radius: 6px; }
+.bar.over i { background: var(--warn); }
+.check-row { display: flex; align-items: center; gap: 12px; min-height: 48px; border-bottom: 1px solid var(--border); }
+.check-row:last-child { border-bottom: 0; }
+.check-row input { width: 24px; height: 24px; accent-color: var(--accent); }
+.check-row .grow { flex: 1; }

@@ -67,3 +67,27 @@ export async function getTargetsForDay(date: ISODate): Promise<DayTargets> {
   const log = await getDayLog(date);
   return log ? log.targets : computeTargetsFor(date);
 }
+
+export type DayLogPatch = Partial<Pick<DayLog, 'steps' | 'sleepHours' | 'sleepQuality' | 'energy' | 'focus' | 'doms' | 'manualRecovery' | 'waterMl' | 'morningWeightKg' | 'foodComplete'>>;
+
+/** עדכון יומן של יום. גם יום שעבר אפשר לערוך ישירות (E1, החריג) */
+export async function updateDayLog(date: ISODate, patch: DayLogPatch): Promise<DayLog> {
+  const cur = await ensureDayLog(date);
+  const next = touched<DayLog>(cur, patch as Partial<DayLog>);
+  await getDb().data('dayLogs').put(next);
+  // משקל בוקר משפיע על משקל הייחוס ועל יעדי היום (R-NUT-2)
+  if ('morningWeightKg' in patch) await refreshToday();
+  return next;
+}
+
+/** הוספת שתייה. מחזיר את הכמות הקודמת (לביטול) */
+export async function addWater(date: ISODate, ml: number): Promise<number> {
+  const cur = await ensureDayLog(date);
+  const prev = cur.waterMl ?? 0;
+  await getDb().data('dayLogs').put(touched(cur, { waterMl: Math.max(0, prev + ml) }));
+  return prev;
+}
+
+export async function listDayLogs(): Promise<DayLog[]> {
+  return alive((await getDb().data('dayLogs').toArray()) as DayLog[]).sort((a, b) => a.date.localeCompare(b.date));
+}

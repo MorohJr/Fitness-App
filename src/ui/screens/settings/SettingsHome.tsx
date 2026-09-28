@@ -13,6 +13,7 @@ const ITEMS: { to: string; icon: IconName; label: string }[] = [
   { to: '/settings/phases', icon: 'phases', label: 'שלבים' },
   { to: '/settings/week', icon: 'calendar', label: 'תוכנית שבועית ותבניות' },
   { to: '/workout/test', icon: 'workout', label: 'מבחן פתיחה' },
+  { to: '/settings/health', icon: 'today', label: 'קיצור הדרך של Apple Health' },
   { to: '/settings/backup', icon: 'backup', label: 'גיבוי ושחזור' }
 ];
 
@@ -39,7 +40,7 @@ export function SettingsHome() {
           />
         </>
       )}
-      <p class="muted small">הורדת עומס, מגבלת תמונות והוראות Apple Health יתווספו בשלבים הבאים.</p>
+      <p class="muted small">הורדת עומס, מגבלת תמונות יתווספו בשלבים הבאים.</p>
     </div>
   );
 }

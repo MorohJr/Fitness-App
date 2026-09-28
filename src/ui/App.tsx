@@ -23,6 +23,9 @@ import { NewExerciseScreen } from './screens/workout/NewExerciseScreen';
 import { OpeningTestScreen } from './screens/workout/OpeningTestScreen';
 import { BodyScreen } from './screens/body/BodyScreen';
 import { InjuryScreen } from './screens/body/InjuryScreen';
+import { TodayScreen } from './screens/today/TodayScreen';
+import { SupplementsScreen } from './screens/nutrition/SupplementsScreen';
+import { HealthShortcutScreen } from './screens/settings/HealthShortcutScreen';
 
 const TABS: { path: string; icon: IconName; label: string }[] = [
   { path: '/dashboard', icon: 'dashboard', label: 'דשבורד' },
@@ -39,9 +42,13 @@ function screenFor(path: string) {
   if (ex) return <ExerciseScreen id={decodeURIComponent(ex[1])} />;
   const inj = /^\/body\/injury\/(.+)$/.exec(path);
   if (inj) return <InjuryScreen id={inj[1] === 'new' ? null : decodeURIComponent(inj[1])} />;
+  const day = /^\/today\/(\d{4}-\d{2}-\d{2})$/.exec(path);
+  if (day) return <TodayScreen date={day[1]} />;
   switch (path) {
     case '/dashboard': return <DashboardScreen />;
-    case '/today': return <Placeholder title="היום" stage={3} />;
+    case '/today': return <TodayScreen />;
+    case '/nutrition/supplements': return <SupplementsScreen />;
+    case '/settings/health': return <HealthShortcutScreen />;
     case '/workout': return <WorkoutHome />;
     case '/workout/library': return <LibraryScreen />;
     case '/workout/new-exercise': return <NewExerciseScreen />;

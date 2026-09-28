@@ -132,3 +132,23 @@ export function ErrorList({ errors }: { errors: string[] }) {
     </div>
   );
 }
+
+/** סולם 1–10 בכפתורים. לחיצה שנייה על אותו ערך מנקה */
+export function ScaleField({ label, value, onChange, hint }: { label: string; value: number | null | undefined; onChange: (v: number | null) => void; hint?: ComponentChildren }) {
+  return (
+    <div class="field">
+      <span class="label">
+        {label}
+        {typeof value === 'number' ? `: ${value}` : ''}
+      </span>
+      <div class="scale" role="group" aria-label={label}>
+        {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+          <button type="button" key={n} aria-pressed={value === n} onClick={() => onChange(value === n ? null : n)}>
+            {n}
+          </button>
+        ))}
+      </div>
+      {hint && <span class="hint">{hint}</span>}
+    </div>
+  );
+}

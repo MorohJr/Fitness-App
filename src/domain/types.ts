@@ -130,7 +130,35 @@ export interface DayLog extends BaseRecord {
   dayType: DayType; // 📸
   targets: DayTargets; // 📸
   morningWeightKg?: number | null;
+  steps?: number | null;
+  sleepHours?: number | null;
+  sleepQuality?: number | null;
+  energy?: number | null;
+  focus?: number | null;
+  doms?: number | null;
+  /** ציון התאוששות ידני, דורס את המחושב (R-REC-1) */
+  manualRecovery?: number | null;
+  waterMl?: number | null;
+  /** "רשמתי את כל מה שאכלתי היום" (R-NUT-3) */
+  foodComplete?: boolean;
   [extra: string]: unknown;
+}
+
+export type SupplementTiming = 'morning' | 'preWorkout' | 'night';
+
+export interface Supplement extends BaseRecord {
+  name: string;
+  dose: string;
+  timing: SupplementTiming;
+  active: boolean;
+}
+
+export interface SupplementLog extends BaseRecord {
+  date: ISODate;
+  supplementId: string;
+  name: string; // 📸
+  dose: string; // 📸
+  taken: boolean;
 }
 
 /** שקילה או מדידה עם משקל (למשקל הייחוס) */
