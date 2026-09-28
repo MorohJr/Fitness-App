@@ -5,6 +5,8 @@ import { useLive } from '../../hooks';
 import { THEME_LABELS } from '../../labels';
 import { NumberField, Segmented } from '../../components/Fields';
 import { Icon, type IconName } from '../../components/Icon';
+import { version } from '../../../../package.json';
+import { SCHEMA_VERSION } from '../../../data/db';
 
 const ITEMS: { to: string; icon: IconName; label: string }[] = [
   { to: '/settings/profile', icon: 'user', label: 'פרופיל' },
@@ -64,6 +66,7 @@ export function SettingsHome() {
           </div>
         </>
       )}
+      <p class="small muted" style={{ marginTop: '16px' }}>גרסה {version} · מבנה נתונים {SCHEMA_VERSION}</p>
     </div>
   );
 }

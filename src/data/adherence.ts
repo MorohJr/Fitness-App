@@ -9,7 +9,7 @@ import { trendWeight } from '../domain/calc/weight';
 import { getDb } from './db';
 import { alive } from './repos/base';
 import { listDayLogs, listWeighIns } from './repos/dayLogs';
-import { getEffectiveDayPlan } from './plan';
+import { effectivePlanResolver } from './plan';
 import { getHistory } from './repos/workouts';
 import { listExercises } from './repos/exercises';
 
@@ -19,9 +19,10 @@ export async function getDayChecks(from: ISODate, to: ISODate): Promise<Map<ISOD
   const food = alive((await db.data('foodLogs').toArray()) as FoodLog[]);
   const workouts = alive((await db.data('workouts').toArray()) as Workout[]).filter((w) => w.status === 'completed' && w.kind === 'regular');
   const out = new Map<ISODate, DayCheck>();
+  const planOf = await effectivePlanResolver();
   for (let d = from; d <= to; d = addDays(d, 1)) {
     const log = logs.get(d);
-    const dayType: DayType = log?.dayType ?? (await getEffectiveDayPlan(d)).dayType;
+    const dayType: DayType = log?.dayType ?? planOf(d).dayType;
     const eaten = sumLogs(food.filter((f) => f.date === d));
     out.set(d, {
       date: d,

@@ -15,6 +15,7 @@ import { App } from './ui/App';
 import { initData } from './data/init';
 import { runStartupChecks } from './data/checks';
 import './data/engineChecks';
+import { purgeDeleted } from './data/purge';
 import { getMeta, setMeta } from './data/repos/meta';
 import { updateStore } from './ui/store';
 
@@ -28,6 +29,7 @@ async function start() {
   render(<App />, document.getElementById('app')!);
   // בדיקות שיוצרות הצעות (E2), ברקע
   runStartupChecks();
+  purgeDeleted().catch((e) => console.error(e));
 }
 
 // גרסה חדשה: באנר עם כפתור רענון, בלי רענון אוטומטי (3.6)

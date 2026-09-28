@@ -42,6 +42,7 @@ export function WorkoutHome() {
   }, [today]);
   const [loc, setLoc] = useState<LocationId | null>(null);
   const [likeLast, setLikeLast] = useState(false);
+  const [again, setAgain] = useState(false);
   const location: LocationId | null = loc ?? (data ? ((data.lastLoc as LocationId) ?? data.profile?.locations.find((l) => l.enabled)?.id ?? null) : null);
   const planned = useLive(async () => (location ? planWorkout(today, location, likeLast) : null), [today, location, likeLast, data?.plan.templateId, data?.plan.dayType]);
   if (!data?.profile) return null;
@@ -101,7 +102,9 @@ export function WorkoutHome() {
             </button>
           )}
           {doneToday && <div class="alert ok" style={{ marginTop: '10px' }}>✓ האימון של היום הושלם. <a href={`#/workout/summary/${doneToday.id}`}>לסיכום</a></div>}
-          {plan.dayType === 'rest' ? (
+          {doneToday && !again ? (
+            <button class="btn block" style={{ marginTop: '10px' }} onClick={() => setAgain(true)}>אימון נוסף היום</button>
+          ) : plan.dayType === 'rest' ? (
             <p class="muted" style={{ marginTop: '10px' }}>שבת, מנוחה מלאה. אין אימון מכל סוג (R-DAY-3).</p>
           ) : (
             <>

@@ -344,3 +344,13 @@ video.scanner { width: 100%; border-radius: var(--radius); background: #000; asp
 .volbar { position: relative; height: 10px; background: var(--track); border-radius: 6px; overflow: hidden; }
 .volbar i { position: absolute; inset-block: 0; inset-inline-start: 0; background: var(--accent); border-radius: 6px; }
 .volbar .zone { position: absolute; inset-block: 0; border-inline: 2px solid var(--muted); opacity: .6; }
+
+/* ===== שלב 8: נגישות ===== */
+:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 2px; }
+button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
+@media (prefers-reduced-motion: reduce) { .flash { animation-duration: .01s; } .photo img { transition: none; } }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ההודעה התחתונה לא חוסמת לחיצות על מה שמתחתיה, חוץ מהכפתור שלה */
+.toast { pointer-events: none; }
+.toast button { pointer-events: auto; }

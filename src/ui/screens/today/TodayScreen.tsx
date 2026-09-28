@@ -1,5 +1,5 @@
 // מסך "היום" (פרק 7): Health, מדדים, התאוששות, תוספים, שתייה ואוכל
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import type { DayLog, ISODate, Supplement, SupplementTiming } from '../../../domain/types';
 import { clock } from '../../../data/clock';
 import { addWater, ensureDayLog, getDayLog, updateDayLog, type DayLogPatch } from '../../../data/repos/dayLogs';
@@ -24,12 +24,11 @@ export function TodayScreen({ date: dateParam }: { date?: string }) {
   }, [date]);
   const [pasteText, setPasteText] = useState<string | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
-  if (!data) return null;
-  if (!data.log) {
+  useEffect(() => {
     // יום בלי רשומה: יוצרים (יעדים לפי מה שהיה בתוקף, R-VER-1)
-    ensureDayLog(date);
-    return null;
-  }
+    if (data && !data.log) ensureDayLog(date);
+  }, [data, date]);
+  if (!data || !data.log) return null;
   const log: DayLog = data.log;
   const set = (patch: DayLogPatch) => updateDayLog(date, patch);
   const rec = recoveryScore(log);

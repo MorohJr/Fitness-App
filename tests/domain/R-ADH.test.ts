@@ -59,4 +59,8 @@ describe('R-ADH-5 אחוז עמידה', () => {
     const r = adherencePct(new Map(), '2026-10-05', 7);
     expect(r).toEqual({ achieved: 0, possible: 6, pct: 0 });
   });
+  it('ימים לפני תחילת השימוש לא נספרים', () => {
+    expect(adherencePct(new Map(), '2026-10-05', 7, '2026-10-05')).toEqual({ achieved: 0, possible: 0, pct: null });
+    expect(adherencePct(new Map(), '2026-10-05', 7, '2026-10-04').possible).toBe(1);
+  });
 });

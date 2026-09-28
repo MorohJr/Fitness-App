@@ -12,18 +12,27 @@ async function decided(): Promise<Suggestion[]> {
   return alive((await getDb().data('suggestions').toArray()) as Suggestion[]).filter((s) => s.status !== 'pending');
 }
 
-export async function getEffectiveDayPlan(date: ISODate): Promise<DayPlan> {
+/** טוען פעם אחת ומחזיר פונקציה לכל תאריך (לחישובים על הרבה ימים) */
+export async function effectivePlanResolver(): Promise<(date: ISODate) => DayPlan> {
   const versions = await listWeekPlanVersions();
   const base = (d: ISODate) => dayPlanForDate(versions, d);
   const dec = await decided();
   const makeups = dec
     .filter((s) => s.type === 'missedWorkout' && s.status === 'approved')
     .map((s) => ({ decidedOn: s.date, templateId: s.payload.templateId as string }));
-  const plan = weekSchedule(startOfWeek(date), base, makeups).get(date) ?? base(date);
-  if (plan.dayType === 'training' && dec.some((s) => s.type === 'recoverySwap' && s.status === 'approved' && s.date === date)) {
-    return { dayType: 'activeRecovery', templateId: 'tpl-recovery' };
-  }
-  return plan;
+  const swaps = new Set(dec.filter((s) => s.type === 'recoverySwap' && s.status === 'approved').map((s) => s.date));
+  const weeks = new Map<ISODate, Map<ISODate, DayPlan>>();
+  return (date: ISODate) => {
+    const ws = startOfWeek(date);
+    if (!weeks.has(ws)) weeks.set(ws, weekSchedule(ws, base, makeups));
+    const plan = weeks.get(ws)!.get(date) ?? base(date);
+    if (plan.dayType === 'training' && swaps.has(date)) return { dayType: 'activeRecovery', templateId: 'tpl-recovery' };
+    return plan;
+  };
+}
+
+export async function getEffectiveDayPlan(date: ISODate): Promise<DayPlan> {
+  return (await effectivePlanResolver())(date);
 }
 
 export async function getDeloadContext(): Promise<DeloadContext> {

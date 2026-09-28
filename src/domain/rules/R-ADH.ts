@@ -52,13 +52,13 @@ export function streak(checks: Map<ISODate, DayCheck>, today: ISODate): number {
   return n;
 }
 
-/** R-ADH-5: סימוני ✓ שהושגו ÷ אפשריים, ב-N הימים שנסגרו (בלי שבת, שבה הרישום אופציונלי) */
-export function adherencePct(checks: Map<ISODate, DayCheck>, today: ISODate, days: number): { achieved: number; possible: number; pct: number | null } {
+/** R-ADH-5: סימוני ✓ שהושגו ÷ אפשריים, ב-N הימים שנסגרו (בלי שבת, שבה הרישום אופציונלי). ימים לפני תחילת השימוש לא נספרים */
+export function adherencePct(checks: Map<ISODate, DayCheck>, today: ISODate, days: number, since?: ISODate): { achieved: number; possible: number; pct: number | null } {
   let achieved = 0;
   let possible = 0;
   for (let i = 1; i <= days; i++) {
     const d = addDays(today, -i);
-    if (isSaturday(d)) continue;
+    if (isSaturday(d) || (since && d < since)) continue;
     const c = checks.get(d);
     if (!c) {
       possible += 1; // תזונה

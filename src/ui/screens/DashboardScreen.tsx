@@ -57,8 +57,9 @@ export function DashboardScreen() {
   const word = plan.dayType === 'training' ? template?.name ?? 'אימון' : plan.dayType === 'activeRecovery' ? 'התאוששות' : 'מנוחה';
   const rec = log ? recoveryScore(log) : null;
   const st = streak(checks, today);
-  const a7 = adherencePct(checks, today, 7);
-  const a30 = adherencePct(checks, today, 30);
+  const since = logs[0]?.date;
+  const a7 = adherencePct(checks, today, 7, since);
+  const a30 = adherencePct(checks, today, 30, since);
   const t = log?.targets;
 
   // גרפים: משקל מגמה ואחוז שומן (שני גרפים, ציר אחד לכל אחד)

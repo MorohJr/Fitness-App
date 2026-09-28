@@ -6,6 +6,7 @@ import { getProfile } from '../data/repos/profile';
 import { applyTheme } from './theme/applyTheme';
 import { Banners } from './components/Banners';
 import { Toast } from './components/Toast';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Icon, type IconName } from './components/Icon';
 import { DashboardScreen } from './screens/DashboardScreen';
 import { SettingsHome } from './screens/settings/SettingsHome';
@@ -117,7 +118,7 @@ export function App() {
       <div class="main-scroll" id="main-scroll">
         <main class="main">
           <Banners />
-          {screenFor(path)}
+          <ErrorBoundary resetKey={path}>{screenFor(path)}</ErrorBoundary>
         </main>
       </div>
       <Toast />
