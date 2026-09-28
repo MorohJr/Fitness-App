@@ -28,3 +28,9 @@ export const MEASURE_LABELS: Record<MeasureType, string> = { reps: 'חזרות',
 export const MEASURE_UNIT: Record<MeasureType, string> = { reps: 'חזרות', time: 'שניות', repsLoad: 'חזרות' };
 export const INJURY_STATUS_LABELS: Record<InjuryStatus, string> = { active: 'כאב פעיל', recovering: 'בהחלמה', healed: 'החלים' };
 export const LOCATION_LABELS: Record<LocationId, string> = { home: 'בית', outdoor: 'חוץ' };
+
+// ===== שלב 4 =====
+import type { MealType, PantryCategory, StockStatus } from '../domain/types';
+export const PANTRY_CATEGORY_LABELS: Record<PantryCategory, string> = { protein: 'חלבון', carbs: 'פחמימות', fats: 'שומנים', produce: 'ירקות ופירות', other: 'תוספים ותבלינים' };
+export const STOCK_LABELS: Record<StockStatus, string> = { in: 'במלאי', low: 'מלאי נמוך', out: 'אזל' };
+export const MEAL_TYPE_LABELS: Record<MealType, string> = { breakfast: 'בוקר', lunch: 'צהריים', dinner: 'ערב', snack: 'נשנוש', postWorkout: 'אחרי אימון' };

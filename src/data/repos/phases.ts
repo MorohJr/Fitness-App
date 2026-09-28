@@ -74,3 +74,13 @@ export async function restorePhase(id: string): Promise<void> {
   await getDb().data('phases').put(touched(p, { deletedAt: null }));
   await refreshToday();
 }
+
+/** שינוי יעד קלורי בתוך שלב, מתאריך (4.1). ימים שעברו לא משתנים */
+export async function addPhaseCalorieChange(phaseId: string, from: ISODate, calories: number): Promise<void> {
+  if (from < clock.today()) throw new Error('שינוי לא יכול להתחיל בעבר (E1)');
+  const p = (await listPhases()).find((x) => x.id === phaseId);
+  if (!p) throw new Error('השלב לא נמצא');
+  const changes = (p.calorieChanges ?? []).filter((c) => c.from !== from);
+  await getDb().data('phases').put(touched(p, { calorieChanges: [...changes, { from, calories }].sort((a, b) => a.from.localeCompare(b.from)) }));
+  await refreshToday();
+}

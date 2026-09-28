@@ -3,8 +3,9 @@ import { useState } from 'preact/hooks';
 import type { Supplement, SupplementTiming } from '../../../domain/types';
 import { deleteSupplement, listSupplements, restoreSupplement, saveSupplement, type SupplementInput } from '../../../data/repos/supplements';
 import { useLive } from '../../hooks';
-import { BackLink, ErrorList, Field, Segmented } from '../../components/Fields';
+import { ErrorList, Field, Segmented } from '../../components/Fields';
 import { showToast } from '../../store';
+import { NutritionTabs } from './NutritionTabs';
 import { TIMING_LABELS } from '../today/TodayScreen';
 
 const EMPTY: SupplementInput = { name: '', dose: '', timing: 'morning', active: true };
@@ -28,8 +29,8 @@ export function SupplementsScreen() {
 
   return (
     <div>
-      <BackLink to="/nutrition" label="תזונה" />
-      <h1>תוספים</h1>
+      <h1>תזונה</h1>
+      <NutritionTabs active="/nutrition/supplements" />
       {edit ? (
         <div class="card">
           <Field label="שם">

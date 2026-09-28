@@ -3,7 +3,7 @@ import type { DayTargets, ISODate, Phase, TargetVersion, WeighIn } from '../type
 import { macrosFor } from '../calc/macros';
 import { referenceWeight } from '../calc/weight';
 import { versionForDate } from './R-VER';
-import { activePhase } from './phase';
+import { activePhase, phaseCaloriesOn } from './phase';
 
 export interface DayTargetsInput {
   date: ISODate;
@@ -29,7 +29,7 @@ export const EMPTY_TARGETS: DayTargets = {
 export function computeDayTargets(input: DayTargetsInput): DayTargets {
   const version = versionForDate(input.targetVersions, input.date);
   const phase = activePhase(input.phases, input.date);
-  const calories = phase ? phase.calories : version ? version.calories : null;
+  const calories = phase ? phaseCaloriesOn(phase, input.date) : version ? version.calories : null;
   const refWeight = referenceWeight(input.weighIns, input.date, input.manualWeightKg);
 
   const t: DayTargets = {

@@ -68,3 +68,9 @@ export function validateEndDate(phase: Phase, endDate: ISODate | null, today: IS
   const clash = alive(phases).find((p) => p.id !== phase.id && p.startDate > phase.startDate && p.startDate <= endDate);
   return clash ? ['חופף לשלב הבא'] : [];
 }
+
+/** יעד השלב ביום מסוים: השינוי האחרון שחל עד אותו יום, אחרת היעד המקורי (4.1) */
+export function phaseCaloriesOn(phase: Phase, date: ISODate): number {
+  const changes = (phase.calorieChanges ?? []).filter((c) => c.from <= date).sort((a, b) => a.from.localeCompare(b.from));
+  return changes.length ? changes[changes.length - 1].calories : phase.calories;
+}

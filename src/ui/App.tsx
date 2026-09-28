@@ -8,7 +8,6 @@ import { Banners } from './components/Banners';
 import { Toast } from './components/Toast';
 import { Icon, type IconName } from './components/Icon';
 import { DashboardScreen } from './screens/DashboardScreen';
-import { Placeholder } from './screens/Placeholder';
 import { SettingsHome } from './screens/settings/SettingsHome';
 import { ProfileScreen } from './screens/settings/ProfileScreen';
 import { EquipmentScreen } from './screens/settings/EquipmentScreen';
@@ -25,6 +24,12 @@ import { BodyScreen } from './screens/body/BodyScreen';
 import { InjuryScreen } from './screens/body/InjuryScreen';
 import { TodayScreen } from './screens/today/TodayScreen';
 import { SupplementsScreen } from './screens/nutrition/SupplementsScreen';
+import { LogScreen } from './screens/nutrition/LogScreen';
+import { PantryScreen } from './screens/nutrition/PantryScreen';
+import { PantryItemScreen } from './screens/nutrition/PantryItemScreen';
+import { MealsScreen } from './screens/nutrition/MealsScreen';
+import { MealScreen } from './screens/nutrition/MealScreen';
+import { ShoppingScreen } from './screens/nutrition/ShoppingScreen';
 import { HealthShortcutScreen } from './screens/settings/HealthShortcutScreen';
 
 const TABS: { path: string; icon: IconName; label: string }[] = [
@@ -42,6 +47,12 @@ function screenFor(path: string) {
   if (ex) return <ExerciseScreen id={decodeURIComponent(ex[1])} />;
   const inj = /^\/body\/injury\/(.+)$/.exec(path);
   if (inj) return <InjuryScreen id={inj[1] === 'new' ? null : decodeURIComponent(inj[1])} />;
+  const nlog = /^\/nutrition\/log\/(\d{4}-\d{2}-\d{2})$/.exec(path);
+  if (nlog) return <LogScreen date={nlog[1]} />;
+  const pi = /^\/nutrition\/pantry\/(.+)$/.exec(path);
+  if (pi) return <PantryItemScreen id={pi[1] === 'new' ? null : pi[1]} />;
+  const ml = /^\/nutrition\/meal\/(.+)$/.exec(path);
+  if (ml) return <MealScreen id={ml[1] === 'new' ? null : ml[1]} />;
   const day = /^\/today\/(\d{4}-\d{2}-\d{2})$/.exec(path);
   if (day) return <TodayScreen date={day[1]} />;
   switch (path) {
@@ -53,7 +64,10 @@ function screenFor(path: string) {
     case '/workout/library': return <LibraryScreen />;
     case '/workout/new-exercise': return <NewExerciseScreen />;
     case '/workout/test': return <OpeningTestScreen />;
-    case '/nutrition': return <Placeholder title="תזונה" stage={4} />;
+    case '/nutrition': return <LogScreen />;
+    case '/nutrition/pantry': return <PantryScreen />;
+    case '/nutrition/meals': return <MealsScreen />;
+    case '/nutrition/shopping': return <ShoppingScreen />;
     case '/body': return <BodyScreen />;
     case '/settings': return <SettingsHome />;
     case '/settings/profile': return <ProfileScreen />;

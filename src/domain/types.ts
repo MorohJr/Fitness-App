@@ -81,6 +81,8 @@ export interface Phase extends BaseRecord {
   calories: number;
   /** יעד קצב שינוי משקל בק"ג לשבוע (שלילי = ירידה) */
   weeklyRateKg: number;
+  /** שינויי יעד קלורי בתוך השלב (4.1, R-NUT-3) */
+  calorieChanges?: { from: ISODate; calories: number }[];
 }
 
 export type PhaseInput = Pick<Phase, 'type' | 'startDate' | 'endDate' | 'calories' | 'weeklyRateKg'>;
@@ -261,4 +263,85 @@ export interface SetLog extends BaseRecord {
   seconds: number | null;
   load: string | null;
   rpe: number | null;
+}
+
+// ===== שלב 4: תזונה (4.3, 4.4) =====
+
+export interface Nutrients {
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+export type PantryCategory = 'protein' | 'carbs' | 'fats' | 'produce' | 'other';
+export type StockStatus = 'in' | 'low' | 'out';
+
+export interface PantryItem extends BaseRecord {
+  name: string;
+  category: PantryCategory;
+  stock: StockStatus;
+  /** ערכים ל-100 גרם */
+  per100: Nutrients;
+  barcode: string | null;
+  source: 'manual' | 'off';
+}
+
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'postWorkout';
+
+export interface MealIngredient {
+  pantryItemId: string;
+  grams: number;
+}
+
+export interface Meal extends BaseRecord {
+  name: string;
+  type: MealType;
+  photoId: string | null;
+  instructions: string;
+  ingredients: MealIngredient[];
+  inWeeklyMenu: boolean;
+}
+
+export type FoodLogKind = 'meal' | 'pantry' | 'quick';
+
+/** מה נאכל. הערכים נשמרים ברגע הרישום (📸) */
+export interface FoodLog extends BaseRecord {
+  date: ISODate;
+  kind: FoodLogKind;
+  refId: string | null;
+  name: string; // 📸
+  /** מכפיל מנה (ארוחה) או גרמים (פריט). במהיר: 1 */
+  amount: number;
+  kcal: number; // 📸
+  protein: number; // 📸
+  carbs: number; // 📸
+  fat: number; // 📸
+}
+
+export interface ShoppingItem extends BaseRecord {
+  name: string;
+  category: PantryCategory;
+  bought: boolean;
+  /** לפריט אוטומטי: מזהה פריט המזווה. ידני: null */
+  autoKey: string | null;
+}
+
+export type SuggestionType =
+  | 'promote' | 'advance' | 'regress' | 'tempo' | 'load' | 'stayOrEasier'
+  | 'calories' | 'deloadEarly' | 'deloadPostpone' | 'recoverySwap' | 'missedWorkout' | 'volume' | 'photoCleanup';
+
+export interface Suggestion extends BaseRecord {
+  type: SuggestionType;
+  /** היום שבו נוצרה ההצעה (או היום שעליו היא חלה) */
+  date: ISODate;
+  refId: string | null;
+  payload: Record<string, unknown>;
+  title: string;
+  /** למה, עם המספרים */
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  decidedAt: string | null;
+  /** לבחירה בין שתי אפשרויות (למשל R-PRG-7) */
+  choice?: string | null;
 }

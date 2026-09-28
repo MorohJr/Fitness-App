@@ -13,6 +13,7 @@ import '@fontsource/rubik/latin-800.css';
 import './ui/theme/theme.css';
 import { App } from './ui/App';
 import { initData } from './data/init';
+import { runStartupChecks } from './data/checks';
 import { getMeta, setMeta } from './data/repos/meta';
 import { updateStore } from './ui/store';
 
@@ -24,6 +25,8 @@ async function start() {
     await setMeta('persistRequested', true);
   }
   render(<App />, document.getElementById('app')!);
+  // בדיקות שיוצרות הצעות (E2), ברקע
+  runStartupChecks();
 }
 
 // גרסה חדשה: באנר עם כפתור רענון, בלי רענון אוטומטי (3.6)

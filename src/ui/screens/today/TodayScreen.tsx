@@ -121,7 +121,7 @@ export function TodayScreen({ date: dateParam }: { date?: string }) {
       <div class="card">
         <div class="row">
           <h2 style={{ margin: 0 }}>שתייה</h2>
-          <span class="num">{fmtNum(water / 1000, 2)} / {fmtNum(waterTarget / 1000, 1)} ל'</span>
+          <span class="num">{fmtNum(water / 1000, 2)}{waterTarget ? ` / ${fmtNum(waterTarget / 1000, 1)}` : ''} ל'</span>
         </div>
         <div class={`bar${waterTarget && water > waterTarget * 1.5 ? ' over' : ''}`} style={{ margin: '10px 0' }}>
           <i style={{ width: `${waterTarget ? Math.min(100, (water / waterTarget) * 100) : 0}%` }} />
