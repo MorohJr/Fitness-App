@@ -18,3 +18,13 @@ export const fmtNum = (n: number | null | undefined, digits = 0) =>
 
 /** מספר עם סימן (+/−), מבודד משמאל לימין כדי שהמינוס לא יקפוץ לצד השני בעברית */
 export const fmtSigned = (n: number, suffix = '') => `⁦${n > 0 ? '+' : ''}${n}${suffix}⁩`;
+
+// ===== שלב 2 =====
+import type { ExerciseStatus, InjuryStatus, LocationId, MeasureType } from '../domain/types';
+
+export const STATUS_EMOJI: Record<ExerciseStatus, string> = { red: '🔴', yellow: '🟡', green: '🟢' };
+export const STATUS_LABELS: Record<ExerciseStatus, string> = { red: 'טכניקה', yellow: 'התקדמות', green: 'שליטה מלאה' };
+export const MEASURE_LABELS: Record<MeasureType, string> = { reps: 'חזרות', time: 'זמן', repsLoad: 'חזרות + עומס' };
+export const MEASURE_UNIT: Record<MeasureType, string> = { reps: 'חזרות', time: 'שניות', repsLoad: 'חזרות' };
+export const INJURY_STATUS_LABELS: Record<InjuryStatus, string> = { active: 'כאב פעיל', recovering: 'בהחלמה', healed: 'החלים' };
+export const LOCATION_LABELS: Record<LocationId, string> = { home: 'בית', outdoor: 'חוץ' };

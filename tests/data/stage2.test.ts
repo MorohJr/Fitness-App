@@ -17,7 +17,7 @@ beforeEach(async () => {
 });
 
 describe('✅ בדיקת קבלה: אחרי מבחן פתיחה, בכל משפחה יש 🟢 או 🟡', () => {
-  it('מבחן מלא לכל 16 המשפחות (תוצאות מגוונות)', async () => {
+  it('מבחן מלא לכל 17 המשפחות (תוצאות מגוונות)', async () => {
     const outcomes = [15, 8, 3]; // מעל, בתוך, מתחת
     let k = 0;
     for (const fam of STRENGTH_FAMILIES) {

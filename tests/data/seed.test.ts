@@ -57,6 +57,9 @@ describe('שלמות מאגר התרגילים (נספח ג׳)', () => {
     const outdoor = DEFAULT_LOCATIONS.find((l) => l.id === 'outdoor')!;
     for (const f of STRENGTH_FAMILIES) expect(ladder(all, f).some((e) => availableAt(e, outdoor)), f).toBe(true);
   });
+  it('17 משפחות כוח (כל נספח ג׳ חוץ מיציבה, לסת ומוביליטי)', () => {
+    expect(STRENGTH_FAMILIES).toHaveLength(17);
+  });
   it('חלופה לבית: Dumbbell Row באותה רמה כמו Australian Row', () => {
     const home = DEFAULT_LOCATIONS.find((l) => l.id === 'home')!;
     const row = ladder(all, 'horizontalPull').filter((e) => availableAt(e, home));

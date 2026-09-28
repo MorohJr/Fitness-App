@@ -73,6 +73,8 @@ export interface NewExerciseInput {
   tempo: string;
   cues: string[];
   safety: string;
+  locations?: Exercise['locations'];
+  secondsPerSet?: number;
 }
 
 /** תרגיל שלי */
@@ -87,8 +89,8 @@ export async function addCustomExercise(input: NewExerciseInput): Promise<Exerci
     familyIds: input.families.map((f) => f.family),
     status: fam0?.kind === 'pool' ? null : 'red',
     category: fam0?.category ?? 'push',
-    locations: ['home', 'outdoor'],
-    secondsPerSet: input.measure === 'time' ? input.targetMax : Math.round(((input.targetMin + input.targetMax) / 2) * 5),
+    locations: input.locations?.length ? input.locations : ['home', 'outdoor'],
+    secondsPerSet: input.secondsPerSet ?? (input.measure === 'time' ? input.targetMax : Math.round(((input.targetMin + input.targetMax) / 2) * 5)),
     custom: true
   };
   await getDb().data('exercises').add(ex);

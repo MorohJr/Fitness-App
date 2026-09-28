@@ -236,3 +236,39 @@ details.card > summary { list-style: none; display: flex; justify-content: space
 details.card > summary::after { content: '+'; color: var(--muted); font-size: 1.2rem; }
 details.card[open] > summary::after { content: '−'; }
 .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+
+/* ===== שלב 2: מאגר תרגילים, מבחן ופציעות ===== */
+textarea.input { min-height: 96px; resize: vertical; line-height: 1.5; font-weight: 400; }
+.filters { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+.filters .field { margin-bottom: 10px; }
+.kanban { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.kanban .col-off { display: none; }
+@media (min-width: 900px) {
+  .kanban { grid-template-columns: repeat(3, 1fr); }
+  .kanban .col-off { display: block; }
+  .kanban-tabs { display: none; }
+}
+.col-head { display: flex; justify-content: space-between; align-items: center; margin: 4px 2px 8px; font-weight: 700; font-size: .85rem; color: var(--muted); }
+.ex-card { display: block; background: var(--surface); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px; text-decoration: none; color: inherit; }
+.ex-card .name { font-weight: 700; direction: ltr; text-align: right; unicode-bidi: plaintext; }
+.ex-card .meta { font-size: .8rem; color: var(--muted); margin-top: 3px; }
+.ex-card.off { opacity: .45; }
+.en { direction: ltr; unicode-bidi: plaintext; }
+h1.en { text-align: right; }
+.tag { display: inline-block; font-size: .72rem; font-weight: 700; padding: 2px 7px; border-radius: 5px; background: var(--surface-2); color: var(--muted); margin-inline-start: 6px; vertical-align: middle; }
+.tag.block { background: var(--danger-soft); color: var(--danger); }
+.tag.mine { background: var(--accent); color: var(--on-accent); }
+.rung { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 0; border-bottom: 1px solid var(--border); text-decoration: none; color: inherit; }
+.rung:last-child { border-bottom: 0; }
+.rung .lvl { width: 26px; height: 26px; border-radius: 6px; background: var(--surface-2); display: grid; place-items: center; font-weight: 800; font-size: .8rem; flex: none; }
+.rung .nm { flex: 1; direction: ltr; text-align: right; unicode-bidi: plaintext; font-weight: 500; }
+.cues { margin: 0; padding-inline-start: 20px; }
+.cues li { margin-bottom: 6px; }
+.timer { font-size: 3rem; font-weight: 800; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+.timer.done { color: var(--accent-ink); }
+input[type='range'] { width: 100%; accent-color: var(--accent); min-height: 44px; }
+.chips-sel { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips-sel button { min-height: 36px; padding: 0 12px; border-radius: 8px; border: 0; background: var(--surface-2); color: var(--muted); font-weight: 600; cursor: pointer; }
+.chips-sel button[aria-pressed='true'] { background: var(--accent); color: var(--on-accent); }
+.progress-line { height: 8px; border-radius: 8px; background: var(--track); overflow: hidden; margin: 8px 0 4px; }
+.progress-line i { display: block; height: 100%; background: var(--accent); }
