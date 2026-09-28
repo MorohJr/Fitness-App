@@ -202,6 +202,10 @@ export interface Exercise extends BaseRecord {
   cues: string[];
   safety: string;
   custom: boolean;
+  /** עומס נוכחי (משקולת או גומייה), אחרי R-PRG-5 */
+  currentLoad?: string | null;
+  /** באימון הבא מתחילים מהקצה התחתון (R-PRG-4, R-PRG-5, R-PRG-7) */
+  restartAtMin?: boolean;
 }
 
 export type InjuryStatus = 'active' | 'recovering' | 'healed';
@@ -235,6 +239,10 @@ export interface Workout extends BaseRecord {
   blockMinutes: Record<string, number>;
   feeling: number | null;
   notes: string;
+  /** סוף המנוחה הנוכחית (טיימר לפי שעה, 3.6) */
+  restEndsAt?: number | null;
+  /** מבנה האימון שנבנה (בלוקים וזמנים), תמונת מצב */
+  plan?: unknown;
 }
 
 export interface WorkoutExercise extends BaseRecord {
@@ -251,6 +259,12 @@ export interface WorkoutExercise extends BaseRecord {
   tempo: string;
   targetToday: string;
   order: number;
+  /** ערך היעד לסט (חזרות או שניות) */
+  targetValue?: number;
+  priority?: string;
+  rpeTarget?: string | null;
+  restSec?: number;
+  note?: string | null;
 }
 
 export type Side = 'right' | 'left' | 'none';

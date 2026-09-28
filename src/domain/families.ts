@@ -32,7 +32,8 @@ export const FAMILY_META = {
   scapula: { name: 'שכמות וכתף אחורית', category: 'pull', kind: 'strength', role: 'accessory' },
   posture: { name: 'יציבה וצוואר', category: 'posture', kind: 'pool', role: 'accessory' },
   jaw: { name: 'לסת ופנים', category: 'posture', kind: 'pool', role: 'accessory' },
-  mobility: { name: 'מוביליטי', category: 'mobility', kind: 'pool', role: 'accessory' }
+  mobility: { name: 'מוביליטי', category: 'mobility', kind: 'pool', role: 'accessory' },
+  stretch: { name: 'מתיחות סטטיות', category: 'mobility', kind: 'pool', role: 'accessory' }
 } as const satisfies Record<string, FamilyMeta>;
 
 export type FamilyId = keyof typeof FAMILY_META;

@@ -68,7 +68,7 @@ describe('✅ בדיקת קבלה: פציעה פעילה חוסמת (מהמסד)
 describe('מאגר ועדכונים לנתונים קיימים', () => {
   it('המאגר נטען פעם אחת, ולא דורס שינויים שלך', async () => {
     const n = (await listExercises()).length;
-    expect(n).toBe(72);
+    expect(n).toBe(84);
     await setExerciseStatus('ex-push-up', 'yellow');
     await updateExercise('ex-push-up', { targetMax: 15 });
     await initData();

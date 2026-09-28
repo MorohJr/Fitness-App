@@ -1,7 +1,7 @@
 // R-DAY: ימים ותוכנית. בשלב 1: תוכנית ברירת מחדל (R-DAY-1) ותבניות (נספח ב')
 import type { DayPlan, DayTemplate, DayType, ISODate, TemplateSlot, WeekPlanVersion } from '../types';
 import type { FamilyId } from '../families';
-import { dayOfWeek } from '../calc/dates';
+import { addDays, dayOfWeek, startOfWeek } from '../calc/dates';
 import { versionForDate } from './R-VER';
 
 type SeedTemplate = Pick<DayTemplate, 'id' | 'name' | 'kind' | 'slots'>;
@@ -72,4 +72,33 @@ export function validateWeekDays(days: DayPlan[], templates: Pick<DayTemplate, '
     }
   });
   return errors;
+}
+
+/**
+ * R-DAY-5: לוח האימונים של שבוע אחרי "בצע את מה שהוחמץ".
+ * ביום ההחלטה מקבלים את התבנית שהוחמצה, והבאות נדחות ביום אימון אחד עד סוף השבוע.
+ * רביעי ושבת לא מוחלפים לעולם.
+ */
+export function weekSchedule(weekStart: ISODate, base: (d: ISODate) => DayPlan, makeups: { decidedOn: ISODate; templateId: string }[]): Map<ISODate, DayPlan> {
+  const dates = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const out = new Map<ISODate, DayPlan>(dates.map((d) => [d, base(d)]));
+  const training = dates.filter((d) => base(d).dayType === 'training' && ![3, 6].includes(dayOfWeek(d)));
+  let templates = training.map((d) => base(d).templateId);
+  for (const m of [...makeups].filter((m) => startOfWeek(m.decidedOn) === weekStart).sort((a, b) => a.decidedOn.localeCompare(b.decidedOn))) {
+    const idx = training.indexOf(m.decidedOn);
+    if (idx < 0) continue;
+    templates = [...templates.slice(0, idx), m.templateId, ...templates.slice(idx)].slice(0, training.length);
+  }
+  training.forEach((d, i) => out.set(d, { dayType: 'training', templateId: templates[i] }));
+  return out;
+}
+
+/** R-DAY-5: יום אימון מוקדם יותר השבוע, בלי אימון שהושלם ובלי החלטה */
+export function findMissed(today: ISODate, schedule: Map<ISODate, DayPlan>, completed: Set<ISODate>, decided: Set<ISODate>): { date: ISODate; templateId: string } | null {
+  if (schedule.get(today)?.dayType !== 'training') return null;
+  for (const [d, p] of [...schedule.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+    if (d >= today) break;
+    if (p.dayType === 'training' && p.templateId && !completed.has(d) && !decided.has(d)) return { date: d, templateId: p.templateId };
+  }
+  return null;
 }

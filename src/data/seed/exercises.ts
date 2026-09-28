@@ -256,3 +256,20 @@ export function buildSeedExercises(): SeedExercise[] {
     };
   });
 }
+
+// ===== מתיחות סטטיות (R-DAY-4, נספח ג'). נוספות גם למאגר קיים =====
+const STRETCH_DEFS: Def[] = [
+  { id: 'ex-doorway-chest-stretch', name: 'Doorway Chest Stretch', fam: [['stretch', 1]], measure: 'time', uni: true, pm: ['chest'], sm: ['shoulders'], range: [30, 45], cues: ['אמה על משקוף, מרפק בגובה הכתף', 'צעד קדימה עד מתיחה בחזה', 'נשימה איטית'], safety: 'בלי כאב בכתף' },
+  { id: 'ex-lat-stretch', name: 'Lat Stretch', fam: [['stretch', 2]], measure: 'time', uni: true, pm: ['back'], range: [30, 45], cues: ['אחיזה במוט או במשקוף', 'אגן אחורה והצידה', 'מרגישים מתיחה בצד הגב'], safety: 'תנועה רכה' },
+  { id: 'ex-cross-body-shoulder', name: 'Cross-body Shoulder Stretch', fam: [['stretch', 3]], measure: 'time', uni: true, pm: ['shoulders'], sm: ['upperBack'], range: [30, 45], cues: ['יד ישרה על פני החזה', 'היד השנייה מקרבת מעל המרפק', 'כתף למטה'], safety: 'לא ללחוץ על המרפק' },
+  { id: 'ex-overhead-triceps', name: 'Overhead Triceps Stretch', fam: [['stretch', 4]], measure: 'time', uni: true, pm: ['triceps'], range: [30, 45], cues: ['יד מאחורי הראש, מרפק למעלה', 'היד השנייה דוחפת את המרפק בעדינות', 'צלעות פנימה'], safety: 'בלי לקמר את הגב' },
+  { id: 'ex-biceps-wall', name: 'Biceps Wall Stretch', fam: [['stretch', 5]], measure: 'time', uni: true, pm: ['biceps'], sm: ['chest'], range: [30, 45], cues: ['כף יד על הקיר מאחור, יד ישרה', 'מסובבים את הגוף החוצה', 'מתיחה לאורך היד'], safety: 'עדין, בלי כאב במרפק' },
+  { id: 'ex-wrist-flexor', name: 'Wrist Flexor Stretch', fam: [['stretch', 6]], measure: 'time', uni: true, pm: ['forearms'], range: [30, 45], cues: ['יד ישרה קדימה, אצבעות למטה', 'היד השנייה מושכת את האצבעות אליך', 'ואז אצבעות למעלה'], safety: 'לחץ קל' },
+  { id: 'ex-standing-quad', name: 'Standing Quad Stretch', fam: [['stretch', 7]], measure: 'time', uni: true, pm: ['quads'], range: [30, 45], cues: ['אוחזים בקרסול מאחור', 'ברכיים צמודות, אגן קדימה', 'יד על קיר לשיווי משקל'], safety: 'בלי למשוך את הברך הצידה' },
+  { id: 'ex-seated-hamstring', name: 'Seated Hamstring Stretch', fam: [['stretch', 8]], measure: 'time', uni: true, pm: ['hamstrings'], sm: ['lowerBack'], range: [30, 45], cues: ['ישיבה, רגל אחת ישרה', 'גב ישר, נטייה מהאגן', 'לא לעגל את הגב'], safety: 'מתיחה, לא כאב' },
+  { id: 'ex-pigeon-stretch', name: 'Pigeon Stretch', fam: [['stretch', 9]], measure: 'time', uni: true, pm: ['glutes'], sm: ['adductors'], range: [45, 60], cues: ['שוק קדמית לרוחב, רגל אחורית ישרה', 'אגן ישר', 'נושמים ומשחררים'], safety: 'אם הברך מציקה, קרב את העקב לאגן' },
+  { id: 'ex-wall-calf', name: 'Wall Calf Stretch', fam: [['stretch', 10]], measure: 'time', uni: true, pm: ['calves'], range: [30, 45], cues: ['ידיים על קיר, רגל אחורית ישרה', 'עקב על הרצפה', 'ואז ברך מעט כפופה'], safety: 'עקב לא מתרומם' },
+  { id: 'ex-butterfly', name: 'Butterfly Stretch', fam: [['stretch', 11]], measure: 'time', pm: ['adductors'], range: [30, 60], cues: ['כפות רגליים צמודות', 'גב ישר', 'ברכיים יורדות לבד'], safety: 'בלי ללחוץ על הברכיים' },
+  { id: 'ex-childs-pose', name: "Child's Pose", fam: [['stretch', 12]], measure: 'time', pm: ['lowerBack'], sm: ['back', 'shoulders'], range: [45, 60], cues: ['ברכיים פתוחות, ישבן לעקבים', 'ידיים ארוכות קדימה', 'נשימה לתוך הגב'], safety: 'כרית מתחת לברכיים אם צריך' }
+];
+DEFS.push(...STRETCH_DEFS);
