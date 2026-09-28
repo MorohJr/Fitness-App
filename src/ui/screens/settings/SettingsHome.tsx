@@ -3,7 +3,7 @@ import { getProfile, updateProfile } from '../../../data/repos/profile';
 import type { ThemeMode } from '../../../domain/types';
 import { useLive } from '../../hooks';
 import { THEME_LABELS } from '../../labels';
-import { Segmented } from '../../components/Fields';
+import { NumberField, Segmented } from '../../components/Fields';
 import { Icon, type IconName } from '../../components/Icon';
 
 const ITEMS: { to: string; icon: IconName; label: string }[] = [
@@ -40,7 +40,30 @@ export function SettingsHome() {
           />
         </>
       )}
-      <p class="muted small">הורדת עומס, מגבלת תמונות יתווספו בשלבים הבאים.</p>
+      {profile && (
+        <>
+          <h2>אימון ותמונות</h2>
+          <div class="card">
+            <NumberField
+              label="שבוע הורדת עומס כל"
+              suffix="שבועות"
+              min={4}
+              max={6}
+              value={profile.settings.deloadEveryWeeks}
+              onChange={(v) => v && v >= 4 && v <= 6 && updateProfile({ settings: { ...profile.settings, deloadEveryWeeks: v } })}
+              hint="4 עד 6 (R-DL-1)"
+            />
+            <NumberField
+              label="מגבלת תמונות (מלבד סט הבסיס)"
+              min={6}
+              max={300}
+              value={profile.settings.photoLimit}
+              onChange={(v) => v && v >= 6 && updateProfile({ settings: { ...profile.settings, photoLimit: v } })}
+              hint="כשנחצית, הסט הישן ביותר מוצע למחיקה (R-PHOTO-3)"
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }

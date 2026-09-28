@@ -1,11 +1,11 @@
 // יומן יומי. בשלב 1: יעדי היום וסוג היום כתמונת מצב (R-NUT-4, R-VER-3)
-import type { DayLog, DayTargets, ISODate, Phase, Profile, TargetVersion, WeekPlanVersion, WeighIn } from '../../domain/types';
+import type { DayLog, DayTargets, ISODate, Phase, Profile, TargetVersion, WeighIn } from '../../domain/types';
 import { computeDayTargets } from '../../domain/rules/R-NUT';
-import { dayPlanForDate } from '../../domain/rules/R-DAY';
 import { snapshotIsLive } from '../../domain/rules/R-VER';
 import { getDb } from '../db';
 import { clock } from '../clock';
 import { alive, newBase, touched } from './base';
+import { getEffectiveDayPlan } from '../plan';
 
 /** שקילות בוקר ומדידות עם משקל (למשקל הייחוס) */
 export async function listWeighIns(): Promise<WeighIn[]> {
@@ -45,8 +45,8 @@ export async function ensureDayLog(date: ISODate): Promise<DayLog> {
   const existing = await getDayLog(date);
   const live = snapshotIsLive(date, clock.today());
   if (existing && !live) return existing;
-  const [targets, plans] = await Promise.all([computeTargetsFor(date), db.data('weekPlanVersions').toArray() as Promise<WeekPlanVersion[]>]);
-  const dayType = dayPlanForDate(plans, date).dayType;
+  const [targets, plan] = await Promise.all([computeTargetsFor(date), getEffectiveDayPlan(date)]);
+  const dayType = plan.dayType;
   if (existing) {
     const next = touched(existing, { targets, dayType });
     await db.data('dayLogs').put(next);

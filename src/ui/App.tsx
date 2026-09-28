@@ -31,6 +31,9 @@ import { MealsScreen } from './screens/nutrition/MealsScreen';
 import { MealScreen } from './screens/nutrition/MealScreen';
 import { ShoppingScreen } from './screens/nutrition/ShoppingScreen';
 import { HealthShortcutScreen } from './screens/settings/HealthShortcutScreen';
+import { RunWorkout } from './screens/workout/RunWorkout';
+import { WorkoutSummary } from './screens/workout/WorkoutSummary';
+import { TemplateScreen } from './screens/settings/TemplateScreen';
 
 const TABS: { path: string; icon: IconName; label: string }[] = [
   { path: '/dashboard', icon: 'dashboard', label: 'דשבורד' },
@@ -47,6 +50,10 @@ function screenFor(path: string) {
   if (ex) return <ExerciseScreen id={decodeURIComponent(ex[1])} />;
   const inj = /^\/body\/injury\/(.+)$/.exec(path);
   if (inj) return <InjuryScreen id={inj[1] === 'new' ? null : decodeURIComponent(inj[1])} />;
+  const sum = /^\/workout\/summary\/(.+)$/.exec(path);
+  if (sum) return <WorkoutSummary id={sum[1]} />;
+  const tp = /^\/settings\/template\/(.+)$/.exec(path);
+  if (tp) return <TemplateScreen id={tp[1]} />;
   const nlog = /^\/nutrition\/log\/(\d{4}-\d{2}-\d{2})$/.exec(path);
   if (nlog) return <LogScreen date={nlog[1]} />;
   const pi = /^\/nutrition\/pantry\/(.+)$/.exec(path);
@@ -64,6 +71,7 @@ function screenFor(path: string) {
     case '/workout/library': return <LibraryScreen />;
     case '/workout/new-exercise': return <NewExerciseScreen />;
     case '/workout/test': return <OpeningTestScreen />;
+    case '/workout/run': return <RunWorkout />;
     case '/nutrition': return <LogScreen />;
     case '/nutrition/pantry': return <PantryScreen />;
     case '/nutrition/meals': return <MealsScreen />;

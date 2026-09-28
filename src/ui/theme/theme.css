@@ -309,3 +309,38 @@ video.scanner { width: 100%; border-radius: var(--radius); background: #000; asp
 .log-item .grow { flex: 1; min-width: 0; }
 .log-item .sub { font-size: .78rem; color: var(--muted); }
 .icon-btn { min-width: 44px; min-height: 44px; border: 0; background: transparent; color: var(--muted); font-size: 1.05rem; cursor: pointer; border-radius: 8px; }
+
+/* ===== שלב 5: אימון ===== */
+.sugg { border-inline-start: 4px solid var(--accent); }
+.plan-row { display: flex; align-items: center; gap: 10px; min-height: 48px; border-bottom: 1px solid var(--border); }
+.plan-row:last-child { border-bottom: 0; }
+.plan-row .grow { flex: 1; min-width: 0; }
+.plan-row .nm { font-weight: 700; direction: ltr; unicode-bidi: plaintext; text-align: right; }
+.plan-row .sub { font-size: .78rem; color: var(--muted); }
+.runbar { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 8px 0 10px; margin: -14px 0 10px; border-bottom: 1px solid var(--border); }
+.runbar .timer { font-size: 1.6rem; }
+.rest { background: var(--accent); color: var(--on-accent); border-radius: var(--radius); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; margin-top: 8px; font-weight: 800; }
+.rest .timer { font-size: 1.8rem; color: var(--on-accent); }
+.rest button { background: rgba(0,0,0,.15); color: var(--on-accent); border: 0; border-radius: 8px; min-height: 40px; padding: 0 12px; font-weight: 700; }
+.flash { position: fixed; inset: 0; z-index: 50; background: var(--accent); animation: flash 1.4s ease-out forwards; pointer-events: none; }
+@keyframes flash { 0%, 30%, 60% { opacity: 1; } 15%, 45% { opacity: .2; } 100% { opacity: 0; } }
+.setrow { display: grid; grid-template-columns: 36px 1fr auto; gap: 8px; align-items: center; min-height: 48px; border-bottom: 1px solid var(--border); }
+.setrow:last-child { border-bottom: 0; }
+.setrow .n { width: 32px; height: 32px; border-radius: 8px; background: var(--surface-2); display: grid; place-items: center; font-weight: 800; }
+.setrow.done .n { background: var(--accent); color: var(--on-accent); }
+.rpe { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.rpe button { min-height: 40px; border: 0; border-radius: 6px; background: var(--surface-2); color: var(--muted); font-weight: 800; }
+.rpe button[aria-pressed='true'] { background: var(--accent); color: var(--on-accent); }
+.blocks { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; scrollbar-width: none; }
+.blocks::-webkit-scrollbar { display: none; }
+.blocks button { flex: none; min-height: 40px; padding: 0 12px; border: 0; border-radius: 8px; background: var(--surface-2); color: var(--muted); font-weight: 700; }
+.blocks button[aria-pressed='true'] { background: var(--text); color: var(--bg); }
+.blocks button.done::after { content: ' ✓'; }
+.ex-tab { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 10px; scrollbar-width: none; }
+.ex-tab button { flex: none; min-height: 36px; padding: 0 10px; border-radius: 8px; border: 1.5px solid var(--border); background: transparent; color: var(--muted); font-weight: 700; font-size: .8rem; direction: ltr; }
+.ex-tab button[aria-pressed='true'] { border-color: var(--accent); color: var(--text); }
+.ex-tab button.done { background: var(--surface-2); }
+.volrow { display: grid; grid-template-columns: 110px 1fr 44px; gap: 8px; align-items: center; margin-bottom: 8px; font-size: .85rem; }
+.volbar { position: relative; height: 10px; background: var(--track); border-radius: 6px; overflow: hidden; }
+.volbar i { position: absolute; inset-block: 0; inset-inline-start: 0; background: var(--accent); border-radius: 6px; }
+.volbar .zone { position: absolute; inset-block: 0; border-inline: 2px solid var(--muted); opacity: .6; }

@@ -14,6 +14,7 @@ import './ui/theme/theme.css';
 import { App } from './ui/App';
 import { initData } from './data/init';
 import { runStartupChecks } from './data/checks';
+import './data/engineChecks';
 import { getMeta, setMeta } from './data/repos/meta';
 import { updateStore } from './ui/store';
 

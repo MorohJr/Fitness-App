@@ -116,7 +116,8 @@ export function WeekPlanScreen() {
       <h2>תבניות</h2>
       {templates.map((t) => (
         <details class="card" key={t.id}>
-          <summary style={{ minHeight: '28px', cursor: 'pointer', fontWeight: 600 }}>{t.name}</summary>
+          <summary>{t.name}</summary>
+          <a class="btn block" style={{ marginTop: '8px' }} href={`#/settings/template/${t.id}`}>ערוך תבנית</a>
           {t.slots.length === 0 ? (
             <p class="small muted" style={{ marginTop: '8px' }}>בלי עבודת כוח: מוביליטי, מתיחות, יציבה, לסת ומדיטציה (R-DAY-2)</p>
           ) : (
@@ -134,7 +135,6 @@ export function WeekPlanScreen() {
           )}
         </details>
       ))}
-      <p class="small muted">עריכת תבניות תיבנה עם מנוע האימונים (שלב 5).</p>
     </div>
   );
 }

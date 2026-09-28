@@ -1,0 +1,50 @@
+// התוכנית בפועל ליום: תוכנית שבועית ← אימון שהוחמץ (R-DAY-5) ← החלפה להתאוששות (R-REC-2). הורדת עומס (R-DL)
+import type { DayPlan, ISODate, Suggestion, Workout } from '../domain/types';
+import { dayPlanForDate, weekSchedule } from '../domain/rules/R-DAY';
+import { isDeloadWeek, type DeloadContext } from '../domain/rules/R-DL';
+import { startOfWeek } from '../domain/calc/dates';
+import { getDb } from './db';
+import { alive } from './repos/base';
+import { listWeekPlanVersions } from './repos/weekPlan';
+import { getProfile } from './repos/profile';
+
+async function decided(): Promise<Suggestion[]> {
+  return alive((await getDb().data('suggestions').toArray()) as Suggestion[]).filter((s) => s.status !== 'pending');
+}
+
+export async function getEffectiveDayPlan(date: ISODate): Promise<DayPlan> {
+  const versions = await listWeekPlanVersions();
+  const base = (d: ISODate) => dayPlanForDate(versions, d);
+  const dec = await decided();
+  const makeups = dec
+    .filter((s) => s.type === 'missedWorkout' && s.status === 'approved')
+    .map((s) => ({ decidedOn: s.date, templateId: s.payload.templateId as string }));
+  const plan = weekSchedule(startOfWeek(date), base, makeups).get(date) ?? base(date);
+  if (plan.dayType === 'training' && dec.some((s) => s.type === 'recoverySwap' && s.status === 'approved' && s.date === date)) {
+    return { dayType: 'activeRecovery', templateId: 'tpl-recovery' };
+  }
+  return plan;
+}
+
+export async function getDeloadContext(): Promise<DeloadContext> {
+  const workouts = alive((await getDb().data('workouts').toArray()) as Workout[]).filter((w) => w.kind === 'regular' && w.status === 'completed');
+  const first = workouts.map((w) => w.date).sort()[0];
+  const profile = await getProfile();
+  const dec = await decided();
+  const weeks = (t: Suggestion['type']) => dec.filter((s) => s.type === t && s.status === 'approved').map((s) => s.payload.weekStart as string);
+  return {
+    programStart: first ? startOfWeek(first) : null,
+    every: profile?.settings.deloadEveryWeeks ?? 5,
+    earlyWeeks: weeks('deloadEarly'),
+    postponedWeeks: weeks('deloadPostpone')
+  };
+}
+
+export async function isDeloadDate(date: ISODate): Promise<boolean> {
+  return isDeloadWeek(date, await getDeloadContext());
+}
+
+/** R-REC-2: האם ההצעה לעבור להתאוששות נדחתה היום */
+export async function lowRecoveryDeclined(date: ISODate): Promise<boolean> {
+  return (await decided()).some((s) => s.type === 'recoverySwap' && s.status === 'rejected' && s.date === date);
+}
