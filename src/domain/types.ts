@@ -359,3 +359,31 @@ export interface Suggestion extends BaseRecord {
   /** לבחירה בין שתי אפשרויות (למשל R-PRG-7) */
   choice?: string | null;
 }
+
+// ===== שלב 6: גוף (4.5) =====
+
+export const CIRCUMFERENCES = ['chest', 'waist', 'neck', 'hips', 'armR', 'armL', 'thighR', 'thighL'] as const;
+export type Circumference = (typeof CIRCUMFERENCES)[number];
+
+export interface BodyMeasurement extends BaseRecord {
+  date: ISODate;
+  weightKg: number | null;
+  circ: Partial<Record<Circumference, number | null>>;
+  heightCm: number | null; // 📸
+  sex: Sex | null; // 📸
+  notes: string;
+}
+
+export interface ProgressPhotoSet extends BaseRecord {
+  measurementId: string | null;
+  date: ISODate;
+  isBaseline: boolean;
+}
+
+export interface Milestone extends BaseRecord {
+  name: string;
+  requirements: { exerciseId: string; value: number }[];
+  achieved: boolean;
+  targetDate: ISODate | null;
+  completedDate: ISODate | null;
+}

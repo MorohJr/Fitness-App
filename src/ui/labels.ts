@@ -34,3 +34,9 @@ import type { MealType, PantryCategory, StockStatus } from '../domain/types';
 export const PANTRY_CATEGORY_LABELS: Record<PantryCategory, string> = { protein: 'חלבון', carbs: 'פחמימות', fats: 'שומנים', produce: 'ירקות ופירות', other: 'תוספים ותבלינים' };
 export const STOCK_LABELS: Record<StockStatus, string> = { in: 'במלאי', low: 'מלאי נמוך', out: 'אזל' };
 export const MEAL_TYPE_LABELS: Record<MealType, string> = { breakfast: 'בוקר', lunch: 'צהריים', dinner: 'ערב', snack: 'נשנוש', postWorkout: 'אחרי אימון' };
+
+// ===== שלב 6 =====
+import type { Circumference } from '../domain/types';
+export const CIRC_LABELS: Record<Circumference, string> = { chest: 'חזה', waist: 'מותניים', neck: 'צוואר', hips: 'אגן', armR: 'זרוע ימין', armL: 'זרוע שמאל', thighR: 'ירך ימין', thighL: 'ירך שמאל' };
+/** שינוי עם סימן, מבודד משמאל לימין */
+export const fmtDelta = (n: number | null, unit = '') => (n === null ? '—' : fmtSigned(n, unit));

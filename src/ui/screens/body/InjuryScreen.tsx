@@ -34,7 +34,7 @@ export function InjuryScreen({ id }: { id: string | null }) {
     } else if (!id) setF(emptyInjury());
   }, [data]);
   if (!data) return null;
-  if (id && !data.injury) return <div><BackLink to="/body" label="גוף ושיאים" /><p>הפציעה לא נמצאה.</p></div>;
+  if (id && !data.injury) return <div><BackLink to="/body/injuries" label="פציעות" /><p>הפציעה לא נמצאה.</p></div>;
   if (!f) return null;
   const set = (p: Partial<InjuryInput>) => setF({ ...f, ...p });
   const preview = { ...f, id: 'preview', createdAt: '', updatedAt: '', deletedAt: null, status: 'active' as InjuryStatus };
@@ -46,7 +46,7 @@ export function InjuryScreen({ id }: { id: string | null }) {
     try {
       await saveInjury(f!, id ?? undefined);
       showToast(id ? 'הפציעה עודכנה' : 'הפציעה נשמרה');
-      navigate('/body');
+      navigate('/body/injuries');
     } catch (e) {
       setErrors([(e as Error).message]);
     }
@@ -54,7 +54,7 @@ export function InjuryScreen({ id }: { id: string | null }) {
 
   return (
     <div>
-      <BackLink to="/body" label="גוף ושיאים" />
+      <BackLink to="/body/injuries" label="פציעות" />
       <h1>{id ? 'פציעה' : 'פציעה חדשה'}</h1>
       <div class="card">
         <SelectField
@@ -128,7 +128,7 @@ export function InjuryScreen({ id }: { id: string | null }) {
           style={{ marginTop: '10px' }}
           onClick={async () => {
             await deleteInjury(id);
-            navigate('/body');
+            navigate('/body/injuries');
             showToast('הפציעה נמחקה', () => restoreInjury(id));
           }}
         >
