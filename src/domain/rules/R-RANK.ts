@@ -24,6 +24,12 @@ export function bodyScore(bodyFat: number | null, sex: Sex | null): number | nul
   return bodyFat >= a ? 1 : bodyFat >= b ? 2 : bodyFat >= c ? 3 : bodyFat >= d ? 4 : 5;
 }
 
+/** R-RANK-1: הערכת אחוז שומן לפי BMI (Deurenberg), כשאין מדידה */
+export function estimateBodyFat(weightKg: number, heightCm: number, age: number, sex: Sex): number {
+  const bmi = weightKg / Math.pow(heightCm / 100, 2);
+  return r1(1.2 * bmi + 0.23 * age - 10.8 * (sex === 'male' ? 1 : 0) - 5.4);
+}
+
 /** R-RANK-5: כמה אחוזי שומן עד ציון הגוף הבא (null בציון 5) */
 export function bodyFatToNext(bodyFat: number, sex: Sex): number | null {
   const bands = BF_BANDS[sex];
@@ -87,17 +93,19 @@ export interface Rank {
   rank: number | null;
   name: string | null;
   bodyFat: number | null;
+  /** אחוז השומן הוא הערכה לפי BMI, לא מדידה (R-RANK-1) */
+  estimated: boolean;
   bodyFatToNext: number | null;
   levelsToNext: number | null;
 }
 
 /** R-RANK-3: דרגה = ממוצע הציונים, מעוגל למטה */
-export function computeRank(bodyFat: number | null, sex: Sex | null, levels: Record<string, number>, max: Record<string, number>): Rank {
+export function computeRank(bodyFat: number | null, sex: Sex | null, levels: Record<string, number>, max: Record<string, number>, estimated = false): Rank {
   const body = bodyScore(bodyFat, sex);
   const strength = strengthScore(strengthRatio(levels, max));
   const rank = body === null ? null : Math.floor((body + strength) / 2);
   return {
-    body, strength, rank, name: rank === null ? null : RANK_NAMES[rank], bodyFat,
+    body, strength, rank, name: rank === null ? null : RANK_NAMES[rank], bodyFat, estimated: estimated && bodyFat !== null,
     bodyFatToNext: bodyFat !== null && sex ? bodyFatToNext(bodyFat, sex) : null,
     levelsToNext: levelsToNext(levels, max)
   };

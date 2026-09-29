@@ -5,3 +5,6 @@ dev-dist/
 *.log
 Claude outputs/
 _dist-check.tgz
+
+# הגדרות מקומיות של Claude Code (נתיבים של המחשב הזה)
+.claude/launch.json

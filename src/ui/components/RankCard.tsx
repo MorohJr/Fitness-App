@@ -20,8 +20,13 @@ export function RankCard({ rank }: { rank: Rank }) {
               {[1, 2, 3, 4, 5].map((n) => <i key={n} class={n <= rank.rank! ? 'on' : ''} />)}
             </div>
             <p class="small" style={{ margin: '8px 0 0' }}>
-              גוף {rank.body}/5 ({fmtNum(rank.bodyFat, 1)}% שומן) · כוח {rank.strength}/5
+              גוף {rank.body}/5 ({rank.estimated ? 'הערכה: ' : ''}{fmtNum(rank.bodyFat, 1)}% שומן) · כוח {rank.strength}/5
             </p>
+            {rank.estimated && (
+              <p class="small muted" style={{ margin: '4px 0 0' }}>
+                הערכה לפי משקל וגובה. <a href="#/body/measure/new">מדידה עם סרט</a> תיתן דרגה מדויקת.
+              </p>
+            )}
             <ul class="small muted rank-next">
               {rank.bodyFatToNext !== null && <li>עוד {fmtNum(rank.bodyFatToNext, 1)}% שומן לציון גוף {rank.body! + 1}</li>}
               {rank.levelsToNext !== null && <li>עוד {rank.levelsToNext} {rank.levelsToNext === 1 ? 'רמה' : 'רמות'}, בכל הסולמות יחד, לציון כוח {rank.strength + 1}</li>}
@@ -30,7 +35,7 @@ export function RankCard({ rank }: { rank: Rank }) {
           </>
         ) : (
           <>
-            <p class="small" style={{ margin: '4px 0 8px' }}>מדוד כדי לראות את הדרגה: צריך מותניים וצוואר (ואגן לנשים) לאחוז שומן.</p>
+            <p class="small" style={{ margin: '4px 0 8px' }}>מדוד כדי לראות את הדרגה: צריך מותניים וצוואר (ואגן לנשים). או מלא בפרופיל מין, גיל וגובה, ושקילה, לקבלת הערכה.</p>
             <a class="btn" href="#/body/measure/new">מדידה חדשה</a>
           </>
         )}

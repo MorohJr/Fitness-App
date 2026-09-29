@@ -142,9 +142,10 @@ export function DashboardScreen() {
           {summary.volume.map((v) => (
             <div class="row small" key={v.muscle}>
               <span>{MUSCLES[v.muscle as MuscleId].name}</span>
-              <span class="num">{fmtNum(v.sets, 1)} {v.sets < VOLUME_MIN ? '↓ מתחת ליעד' : v.sets > VOLUME_MAX ? '↑ מעל היעד' : '✓'}</span>
+              <span class="num">{fmtNum(v.sets, 1)} {summary.foundation ? '' : v.sets < VOLUME_MIN ? '↓ מתחת ליעד' : v.sets > VOLUME_MAX ? '↑ מעל היעד' : '✓'}</span>
             </div>
           ))}
+          {summary.foundation && <p class="small muted" style={{ margin: '6px 0 0' }}>תוכנית יסודות: הנפח נמוך בכוונה, בלי השוואה ליעד 10–16 (R-BEG-5)</p>}
           {summary.newPRs.length > 0 && <p class="small" style={{ marginTop: '8px' }}>🏅 {summary.newPRs.map((p) => `${p.name} ${p.value}`).join(' · ')}</p>}
         </div>
       )}

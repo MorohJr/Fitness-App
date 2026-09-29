@@ -25,7 +25,8 @@ export function FoundationScreen() {
   const [confirm, setConfirm] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   if (!st) return null;
-  const { active, pending, switchPending, readyFamilies, remainingFamilies } = st;
+  const { active, pending, switchPending, readyFamilies, remainingFamilies, startsOn } = st;
+  const startsToday = startsOn === today;
   const total = FOUNDATION_FAMILIES.length;
   const sunday = nextSunday(today);
 
@@ -115,8 +116,8 @@ export function FoundationScreen() {
             {readyFamilies.length > 0 && readyFamilies.length < total && (
               <div class="alert warn">משפחות שלא נבדקו לא ייכנסו לאימון עד שתבדוק אותן.</div>
             )}
-            <button class="btn primary block" disabled={!readyFamilies.length} onClick={() => run(startFoundation, `תוכנית היסודות מתחילה ב-${formatDate(sunday)}`)}>
-              התחל ביום ראשון {formatDate(sunday)}
+            <button class="btn primary block" disabled={!readyFamilies.length} onClick={() => run(startFoundation, startsToday ? 'תוכנית היסודות התחילה' : `תוכנית היסודות מתחילה ב-${formatDate(startsOn)}`)}>
+              {startsToday ? 'התחל היום' : `התחל ביום ראשון ${formatDate(startsOn)}`}
             </button>
           </div>
         </>

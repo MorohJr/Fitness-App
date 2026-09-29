@@ -174,14 +174,14 @@ export function WorkoutHome() {
             <div class="volrow" key={m}>
               <span>{MUSCLES[m].name}</span>
               <div class="volbar">
-                <span class="zone" style={{ insetInlineStart: `${(VOLUME_MIN / max) * 100}%`, width: `${((VOLUME_MAX - VOLUME_MIN) / max) * 100}%` }} />
+                {!found.active && <span class="zone" style={{ insetInlineStart: `${(VOLUME_MIN / max) * 100}%`, width: `${((VOLUME_MAX - VOLUME_MIN) / max) * 100}%` }} />}
                 <i style={{ width: `${Math.min(100, (v / max) * 100)}%` }} />
               </div>
               <span class="num small">{fmtNum(v, 1)}</span>
             </div>
           );
         })}
-        <p class="small muted" style={{ margin: 0 }}>יעד 10–16 לשבוע. שריר ראשי 1, משני 0.5 (R-GEN-3)</p>
+        <p class="small muted" style={{ margin: 0 }}>{found.active ? 'תוכנית יסודות: הנפח נמוך בכוונה, בלי יעד שבועי (R-BEG-5).' : 'יעד 10–16 לשבוע.'} שריר ראשי 1, משני 0.5 (R-GEN-3)</p>
       </div>
 
       {recent.length > 0 && (

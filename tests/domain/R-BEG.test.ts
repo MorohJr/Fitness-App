@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { deloadProgramStart, FOUNDATION_FAMILIES, FOUNDATION_STRENGTH_LIMIT_SEC, FOUNDATION_TOTAL_LIMIT_SEC, foundationDue, foundationOn, foundationSets, pendingFoundation, remainingTestFamilies } from '../../src/domain/rules/R-BEG';
+import { deloadProgramStart, foundationStartDate, FOUNDATION_FAMILIES, FOUNDATION_STRENGTH_LIMIT_SEC, FOUNDATION_TOTAL_LIMIT_SEC, foundationDue, foundationOn, foundationSets, pendingFoundation, remainingTestFamilies } from '../../src/domain/rules/R-BEG';
 import { buildWorkout, type BuildInput } from '../../src/domain/engine/buildWorkout';
 import { FOUNDATION_WEEK_DAYS } from '../../src/domain/rules/R-DAY';
 import { STRENGTH_FAMILIES } from '../../src/domain/families';
@@ -20,6 +20,16 @@ describe('R-BEG: באיזה שבוע של תוכנית היסודות', () => {
     expect(foundationOn(versions, '2026-10-10')?.week).toBe(1);
     expect(foundationOn(versions, '2026-10-11')?.week).toBe(2);
     expect(foundationOn(versions, '2026-11-14')?.week).toBe(6);
+  });
+  it('R-BEG-2 (2.8): התחלה באמצע השבוע, השבועות נספרים מיום ההתחלה', () => {
+    const mid = [v('2026-09-27', undefined), v('2026-09-29', 'foundation')];
+    expect(foundationOn(mid, '2026-09-29')).toEqual({ start: '2026-09-29', week: 1 });
+    expect(foundationOn(mid, '2026-10-05')?.week).toBe(1);
+    expect(foundationOn(mid, '2026-10-06')?.week).toBe(2);
+    expect(foundationOn(mid, '2026-11-09')?.week).toBe(6); // יום 41
+    expect(foundationOn(mid, '2026-11-10')?.week).toBe(7); // יום 42
+    expect(foundationStartDate([v('2026-09-27', undefined)], '2026-09-29')).toBe('2026-09-29');
+    expect(foundationStartDate(mid, '2026-12-01')).toBeNull();
   });
   it('עריכה של התוכנית באמצע (גרסת יסודות נוספת) לא מאפסת את הספירה', () => {
     const edited = [...versions.slice(0, 2), v('2026-10-18', 'foundation')];

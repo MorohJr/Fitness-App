@@ -10,6 +10,7 @@ import { checkFoundationDone, getFoundationState, startFoundation } from '../../
 import { getDeloadContext, getEffectiveDayPlan, getFoundationInfo, isDeloadDate } from '../../src/data/plan';
 import { FOUNDATION_FAMILIES, FOUNDATION_STRENGTH_LIMIT_SEC, FOUNDATION_TOTAL_LIMIT_SEC } from '../../src/domain/rules/R-BEG';
 import { ladder } from '../../src/domain/calc/exercises';
+import { weeklySummary } from '../../src/data/adherence';
 import type { Exercise, ExerciseStatus } from '../../src/domain/types';
 
 /** בדיקת רמה של מתחיל: הרמה הכי קלה בכל משפחת יסודות 🟡 */
@@ -38,6 +39,11 @@ async function doWorkout(date: string) {
   return finishWorkout(w.id, { feeling: 7, notes: '' });
 }
 
+async function approveFoundationSwitch() {
+  const { switchToRegular } = await import('../../src/data/foundation');
+  await switchToRegular();
+}
+
 beforeEach(async () => {
   await freshApp('2026-09-29'); // שלישי
 });
@@ -59,7 +65,7 @@ describe('תבניות ותרגילים חדשים (2.7)', () => {
   });
 });
 
-describe('✅ בדיקת קבלה 9א: בדיקת רמה ← יסודות מיום ראשון הבא ← אימון עד 60 דקות', () => {
+describe('✅ בדיקת קבלה 9א: בדיקת רמה ← יסודות מהיום (2.8) ← אימון עד 60 דקות', () => {
   it('בלי בדיקת רמה אי אפשר להתחיל', async () => {
     await expect(startFoundation()).rejects.toThrow('בדיקת רמה');
   });
@@ -67,12 +73,15 @@ describe('✅ בדיקת קבלה 9א: בדיקת רמה ← יסודות מיו
   it('מקצה לקצה', async () => {
     await levelCheck();
     expect((await getFoundationState()).readyFamilies).toHaveLength(11);
+    expect((await getFoundationState()).startsOn).toBe('2026-09-29');
     const v = await startFoundation();
-    expect(v.effectiveFrom).toBe('2026-10-04');
+    // R-BEG-2 (2.8): תוכנית יסודות ראשונה מהיום, גם באמצע השבוע
+    expect(v.effectiveFrom).toBe('2026-09-29');
     expect(v.program).toBe('foundation');
-    expect((await getFoundationState()).pending?.id).toBe(v.id);
-    // היום (שלישי) עוד בתוכנית הקודמת
-    expect(await getFoundationInfo('2026-09-29')).toBeNull();
+    expect(await getFoundationInfo('2026-09-29')).toEqual({ start: '2026-09-29', week: 1 });
+    expect((await getFoundationInfo('2026-10-05'))?.week).toBe(1);
+    expect((await getFoundationInfo('2026-10-06'))?.week).toBe(2);
+    expect((await getEffectiveDayPlan('2026-09-29')).templateId).toBe('tpl-walk'); // שלישי
 
     setNow('2026-10-04');
     expect((await getEffectiveDayPlan('2026-10-04')).templateId).toBe('tpl-found-upper');
@@ -86,11 +95,25 @@ describe('✅ בדיקת קבלה 9א: בדיקת רמה ← יסודות מיו
     // שלישי: הליכה ומוביליטי
     const tue = await getEffectiveDayPlan('2026-10-06');
     expect(tue).toEqual({ dayType: 'activeRecovery', templateId: 'tpl-walk' });
+
+    // R-BEG-5 (2.8): הסיכום השבועי לא משווה ליעד הנפח בשבוע של יסודות
+    expect((await weeklySummary('2026-09-27')).foundation).toBe(true);
+    expect((await weeklySummary('2026-09-20')).foundation).toBe(false);
   });
 });
 
 describe('✅ בדיקת קבלה 9א: אחרי 6 שבועות מוצע מעבר, והורדת העומס מתחילה רק אז', () => {
+  it('תוכנית יסודות שנייה מתחילה מיום ראשון הבא (R-VER-2)', async () => {
+    await levelCheck();
+    await startFoundation();
+    await approveFoundationSwitch();
+    setNow('2026-10-07');
+    const again = await startFoundation();
+    expect(again.effectiveFrom).toBe('2026-10-11');
+  });
+
   it('מקצה לקצה', async () => {
+    setNow('2026-10-04'); // מתחילים ביום ראשון, כמו קודם
     await levelCheck();
     await startFoundation();
     await doWorkout('2026-10-04');

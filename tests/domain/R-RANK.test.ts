@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bodyFatToNext, bodyScore, computeRank, levelsReached, levelsToNext, maxLevels, strengthRatio, strengthScore } from '../../src/domain/rules/R-RANK';
+import { bodyFatToNext, bodyScore, computeRank, estimateBodyFat, levelsReached, levelsToNext, maxLevels, strengthRatio, strengthScore } from '../../src/domain/rules/R-RANK';
 import { exercisesWith, session } from './engine-helpers';
 
 describe('R-RANK-1: ציון גוף לפי אחוז שומן', () => {
@@ -20,6 +20,21 @@ describe('R-RANK-1: ציון גוף לפי אחוז שומן', () => {
     expect(bodyFatToNext(14, 'male')).toBeNull();
   });
 });
+
+describe('R-RANK-1: הערכה לפי BMI כשאין מדידה (2.8)', () => {
+  it('נוסחת Deurenberg', () => {
+    // גבר, 104 ק"ג, 178 ס"מ, גיל 33: BMI 32.82 → 1.2×32.82 + 0.23×33 − 10.8 − 5.4 = 30.78
+    expect(estimateBodyFat(104, 178, 33, 'male')).toBe(30.8);
+    expect(estimateBodyFat(60, 165, 30, 'female')).toBe(r1(1.2 * (60 / 1.65 ** 2) + 0.23 * 30 - 5.4));
+  });
+  it('דרגה מהערכה מסומנת "הערכה"', () => {
+    const r = computeRank(30.7, 'male', {}, maxLevels(exercisesWith(2)), true);
+    expect(r).toMatchObject({ body: 1, rank: 1, estimated: true });
+    expect(computeRank(null, 'male', {}, maxLevels(exercisesWith(2)), true).estimated).toBe(false);
+  });
+});
+
+const r1 = (x: number) => Math.round(x * 10) / 10;
 
 describe('R-RANK-2: ציון כוח', () => {
   const exs = exercisesWith(2);

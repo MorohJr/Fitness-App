@@ -1,7 +1,7 @@
 // תוכנית יסודות (R-BEG): התחלה, מעבר לתוכנית הרגילה, והצעת הסיום
 import type { ISODate, Suggestion, WeekPlanVersion } from '../domain/types';
 import { DEFAULT_WEEK_DAYS, FOUNDATION_WEEK_DAYS } from '../domain/rules/R-DAY';
-import { FOUNDATION_FAMILIES, FOUNDATION_WEEKS, foundationDue, foundationOn, pendingFoundation, remainingTestFamilies, type FoundationInfo } from '../domain/rules/R-BEG';
+import { FOUNDATION_FAMILIES, FOUNDATION_WEEKS, foundationDue, foundationOn, foundationStartDate, pendingFoundation, remainingTestFamilies, type FoundationInfo } from '../domain/rules/R-BEG';
 import { familyReady } from '../domain/rules/opening-test';
 import { STRENGTH_FAMILIES, FAMILY_META, type FamilyId } from '../domain/families';
 import { formatDate, nextSunday, startOfWeek } from '../domain/calc/dates';
@@ -25,6 +25,8 @@ export interface FoundationState {
   readyFamilies: FamilyId[];
   /** משפחות שעוד לא נבדקו בסוף התוכנית (R-BEG-6) */
   remainingFamilies: FamilyId[];
+  /** מתי תתחיל אם מתחילים עכשיו (R-BEG-2) */
+  startsOn: ISODate;
 }
 
 export async function getFoundationState(today: ISODate = clock.today()): Promise<FoundationState> {
@@ -37,15 +39,17 @@ export async function getFoundationState(today: ISODate = clock.today()): Promis
     pending: pendingFoundation(versions, today),
     switchPending,
     readyFamilies: FOUNDATION_FAMILIES.filter((f) => familyReady(exs, f)),
-    remainingFamilies: remainingTestFamilies(STRENGTH_FAMILIES).filter((f) => !familyReady(exs, f))
+    remainingFamilies: remainingTestFamilies(STRENGTH_FAMILIES).filter((f) => !familyReady(exs, f)),
+    startsOn: foundationStartDate(versions, today) ?? nextSunday(today)
   };
 }
 
-/** R-BEG-2: גרסת תוכנית של יסודות, מיום ראשון הבא (R-VER-2). באישור, מהמסך */
+/** R-BEG-2: גרסת תוכנית של יסודות. הראשונה מהיום, אחרת מיום ראשון הבא (R-VER-2). באישור, מהמסך */
 export async function startFoundation(): Promise<WeekPlanVersion> {
   const exs = await listExercises();
   if (!FOUNDATION_FAMILIES.some((f) => familyReady(exs, f))) throw new Error('קודם בדיקת רמה: לפחות משפחה אחת');
-  return saveWeekPlan(FOUNDATION_WEEK_DAYS, 'foundation');
+  const from = foundationStartDate(await listWeekPlanVersions(), clock.today()) ?? undefined;
+  return saveWeekPlan(FOUNDATION_WEEK_DAYS, 'foundation', from);
 }
 
 /** R-BEG-6: התוכנית הרגילה (R-DAY-1) מיום ראשון הבא */

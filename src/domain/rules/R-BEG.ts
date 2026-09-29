@@ -19,7 +19,7 @@ export const FOUNDATION_TOTAL_LIMIT_SEC = 60 * 60;
 export const WALK_DAY_MINUTES = { cardio: 25, mobility: 10, stretch: 10 };
 
 export interface FoundationInfo {
-  /** יום ראשון שבו התחילה התוכנית */
+  /** היום שבו התחילה התוכנית (לא בהכרח יום ראשון, R-BEG-2) */
   start: ISODate;
   /** שבוע בתוכנית (1 = הראשון). יכול לעבור את 6 אם עוד לא עברו לתוכנית הרגילה */
   week: number;
@@ -38,7 +38,8 @@ export function foundationOn(versions: WeekPlanVersion[], date: ISODate): Founda
   let i = live.indexOf(cur!);
   while (i > 0 && isFoundation(live[i - 1])) i--;
   const start = live[i].effectiveFrom;
-  return { start, week: Math.floor(daysBetween(startOfWeek(start), startOfWeek(date)) / 7) + 1 };
+  // R-BEG-2: שבוע 1 = 7 הימים הראשונים מיום ההתחלה
+  return { start, week: Math.floor(daysBetween(start, date) / 7) + 1 };
 }
 
 /** גרסת יסודות שנקבעה לעתיד (אחרי שנשמרה ולפני שהתחילה) */
@@ -74,5 +75,10 @@ export function deloadProgramStart(completedDates: ISODate[], versions: WeekPlan
 
 /** יום אחרון בשבוע השישי (לתצוגה) */
 export function foundationEnd(start: ISODate): ISODate {
-  return addDays(startOfWeek(start), FOUNDATION_WEEKS * 7 - 1);
+  return addDays(start, FOUNDATION_WEEKS * 7 - 1);
+}
+
+/** R-BEG-2: תוכנית יסודות ראשונה מתחילה מהיום. אם כבר הייתה, מיום ראשון הבא (R-VER-2) */
+export function foundationStartDate(versions: WeekPlanVersion[], today: ISODate): ISODate | null {
+  return versions.some((v) => !v.deletedAt && v.program === 'foundation') ? null : today;
 }

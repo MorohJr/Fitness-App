@@ -12,6 +12,8 @@ import { listDayLogs, listWeighIns } from './repos/dayLogs';
 import { effectivePlanResolver } from './plan';
 import { getHistory } from './repos/workouts';
 import { listExercises } from './repos/exercises';
+import { listWeekPlanVersions } from './repos/weekPlan';
+import { foundationOn } from '../domain/rules/R-BEG';
 
 export async function getDayChecks(from: ISODate, to: ISODate): Promise<Map<ISODate, DayCheck>> {
   const db = getDb();
@@ -41,12 +43,14 @@ export interface WeekSummary {
   newPRs: { exerciseId: string; name: string; value: string }[];
   trendChange: number | null;
   workoutsDone: number;
+  /** R-BEG-5: שבוע של יסודות, הנפח נמוך בכוונה ולא מסומן מול היעד */
+  foundation: boolean;
 }
 
 /** סיכום שבועי (פרק 7): נפח מול יעד, שיאים חדשים, שינוי במשקל המגמה */
 export async function weeklySummary(weekStart: ISODate): Promise<WeekSummary> {
   const end = addDays(weekStart, 6);
-  const [history, exs, weighIns] = await Promise.all([getHistory(), listExercises(), listWeighIns()]);
+  const [history, exs, weighIns, versions] = await Promise.all([getHistory(), listExercises(), listWeighIns(), listWeekPlanVersions()]);
   const byId = new Map(exs.map((e) => [e.id, e]));
   const vol = weeklyVolume(history, byId, weekStart);
   const before = personalRecords(history.filter((h) => h.date < weekStart), byId);
@@ -66,7 +70,8 @@ export async function weeklySummary(weekStart: ISODate): Promise<WeekSummary> {
     volume: MAJOR_MUSCLES.map((m) => ({ muscle: m, sets: vol[m] })),
     newPRs,
     trendChange: tEnd !== null && tStart !== null ? Math.round((tEnd - tStart) * 10) / 10 : null,
-    workoutsDone
+    workoutsDone,
+    foundation: Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)).some((d) => foundationOn(versions, d) !== null)
   };
 }
 

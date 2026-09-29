@@ -45,14 +45,15 @@ export async function getDayPlan(date: ISODate): Promise<DayPlan> {
  * R-VER-2: שמירה חלה מיום ראשון הבא (או מהיום, אם זו התוכנית הראשונה).
  * program: יסודות או רגילה (R-BEG). אם לא צוין, נשאר כמו בתוכנית שבתוקף באותו תאריך
  */
-export async function saveWeekPlan(days: DayPlan[], program?: WeekPlanVersion['program']): Promise<WeekPlanVersion> {
+export async function saveWeekPlan(days: DayPlan[], program?: WeekPlanVersion['program'], from?: ISODate): Promise<WeekPlanVersion> {
   const errors = validateWeekDays(days, await listTemplates());
   if (errors.length) throw new Error(errors.join(', '));
   const db = getDb();
   const saved = await db.transaction('rw', db.data('weekPlanVersions'), async () => {
     const versions = await listWeekPlanVersions();
     const today = clock.today();
-    const effectiveFrom = weekPlanEffectiveFrom(today, versions.length > 0);
+    // from: חריג מתועד בלבד (תוכנית יסודות ראשונה, R-BEG-2)
+    const effectiveFrom = from ?? weekPlanEffectiveFrom(today, versions.length > 0);
     const plan = planVersionSave(versions, effectiveFrom, today);
     const cleanDays = days.map((d) => ({ dayType: d.dayType, templateId: d.templateId }));
     const prog = program ?? versionForDate(versions, effectiveFrom)?.program ?? 'regular';
