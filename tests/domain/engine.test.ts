@@ -44,11 +44,19 @@ describe('R-GEN-1 בחירת תרגיל', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
   it('בבית בלי מוט: משיכה אנכית מוחלפת או מדלגת עם סיבה (R-GEN-1א)', () => {
-    const w = buildWorkout(input({ template: tpl('tpl-pull'), plan: { dayType: 'training', templateId: 'tpl-pull' }, location: home }));
+    // רמה 0 (Towel Lat Pulldown) עוד לא נבדקה, כך שאין תרגיל משיכה אנכית זמין בבית
+    const exs = exercisesWith(2).map((e) => (e.id === 'ex-towel-lat-pulldown' ? { ...e, status: 'red' as const } : e));
+    const w = buildWorkout(input({ template: tpl('tpl-pull'), plan: { dayType: 'training', templateId: 'tpl-pull' }, location: home, exercises: exs }));
     const vp = w.strength.find((i) => i.family === 'verticalPull');
     if (vp) expect(vp.substituteFor).toBeTruthy();
     else expect(w.skipped.some((s) => s.family === 'משיכה אנכית')).toBe(true);
     expect(w.strength.find((i) => i.family === 'horizontalPull')?.exercise.name).toBe('Dumbbell Row');
+  });
+  it('בבית בלי מוט, כשרמה 0 מוכנה: Towel Lat Pulldown בלי תחליף (2.7)', () => {
+    const w = buildWorkout(input({ template: tpl('tpl-pull'), plan: { dayType: 'training', templateId: 'tpl-pull' }, location: home }));
+    const vp = w.strength.find((i) => i.family === 'verticalPull')!;
+    expect(vp.exercise.name).toBe('Towel Lat Pulldown');
+    expect(vp.substituteFor).toBeNull();
   });
   it('פציעה חוסמת: תחליף לאותו שריר או דילוג עם סיבה (R-INJ-1, R-INJ-2)', () => {
     const inj: Injury = { id: 'i', createdAt: '', updatedAt: '', deletedAt: null, area: 'knee', pain: 5, status: 'active', startDate: '2026-10-01', healedDate: null, notes: '', blockedExercises: [], blockedFamilies: ['squat', 'singleLeg'], blockedMuscles: ['quads'] };

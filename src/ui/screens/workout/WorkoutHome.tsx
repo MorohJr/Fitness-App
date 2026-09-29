@@ -8,6 +8,8 @@ import { getProfile } from '../../../data/repos/profile';
 import { recordDecision } from '../../../data/repos/suggestions';
 import { getDeloadContext, getEffectiveDayPlan } from '../../../data/plan';
 import { checkRecoverySwap } from '../../../data/engineChecks';
+import { getFoundationState } from '../../../data/foundation';
+import { FOUNDATION_WEEKS } from '../../../domain/rules/R-BEG';
 import { getDb } from '../../../data/db';
 import { STRENGTH_FAMILIES } from '../../../domain/families';
 import { familyReady } from '../../../domain/rules/opening-test';
@@ -32,13 +34,13 @@ export function WorkoutHome() {
     checkRecoverySwap();
   }, []);
   const data = useLive(async () => {
-    const [exs, active, profile, plan, dctx, history] = await Promise.all([listExercises(), activeWorkout(), getProfile(), getEffectiveDayPlan(today), getDeloadContext(), getHistory()]);
+    const [exs, active, profile, plan, dctx, history, found] = await Promise.all([listExercises(), activeWorkout(), getProfile(), getEffectiveDayPlan(today), getDeloadContext(), getHistory(), getFoundationState(today)]);
     const workouts = ((await getDb().data('workouts').toArray()) as Workout[]).filter((w) => !w.deletedAt);
     const lastLoc = workouts.filter((w) => w.kind === 'regular' && w.status === 'completed').sort((a, b) => b.date.localeCompare(a.date))[0]?.location;
     const doneToday = workouts.find((w) => w.kind === 'regular' && w.status === 'completed' && w.date === today);
     const recent = workouts.filter((w) => w.kind === 'regular' && w.status !== 'inProgress').sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
     const vol = weeklyVolume(history, new Map(exs.map((e) => [e.id, e])), startOfWeek(today));
-    return { ready: STRENGTH_FAMILIES.filter((f) => familyReady(exs, f)).length, active, profile, plan, dctx, lastLoc, doneToday, recent, vol, count: exs.length };
+    return { ready: STRENGTH_FAMILIES.filter((f) => familyReady(exs, f)).length, active, profile, plan, dctx, lastLoc, doneToday, recent, vol, count: exs.length, found };
   }, [today]);
   const loc = useStore(locationStore);
   const setLoc = (l: LocationId) => locationStore.set(l);
@@ -47,7 +49,8 @@ export function WorkoutHome() {
   const location: LocationId | null = loc ?? (data ? ((data.lastLoc as LocationId) ?? data.profile?.locations.find((l) => l.enabled)?.id ?? null) : null);
   const planned = useLive(async () => (location ? planWorkout(today, location, likeLast) : null), [today, location, likeLast, data?.plan.templateId, data?.plan.dayType]);
   if (!data?.profile) return null;
-  const { ready, active, profile, plan, dctx, doneToday, recent, vol, count } = data;
+  const { ready, active, profile, plan, dctx, doneToday, recent, vol, count, found } = data;
+  const inFoundation = !!(found.active || found.pending);
   const total = STRENGTH_FAMILIES.length;
   const deload = isDeloadWeek(today, dctx);
 
@@ -65,7 +68,38 @@ export function WorkoutHome() {
 
       <SuggestionsList filter={(s) => (s.type === 'missedWorkout' || s.type === 'recoverySwap') && s.date === today} />
 
-      {ready < total && (
+      {ready === 0 && !inFoundation && (
+        <div class="card">
+          <h2>איך מתחילים?</h2>
+          <p class="small">בלי בדיקה ראשונה אי אפשר לבנות אימון. בחר את הדרך שמתאימה לך:</p>
+          <a class="btn primary block" href="#/workout/foundation">אני מתחיל מאפס: תוכנית יסודות</a>
+          <p class="small muted" style={{ margin: '6px 0 12px' }}>{FOUNDATION_WEEKS} שבועות, 4 אימונים קלים בשבוע, מהתרגילים הכי קלים (R-BEG)</p>
+          <a class="btn block" href="#/workout/test">מבחן פתיחה מלא</a>
+          <p class="small muted" style={{ margin: '6px 0 0' }}>למי שכבר מתאמן: סט מקסימלי בכל אחת מ-{total} המשפחות (פרק 6)</p>
+        </div>
+      )}
+
+      {inFoundation && (
+        <a class="card" href="#/workout/foundation" style={{ display: 'block', color: 'inherit', textDecoration: 'none' }}>
+          <div class="row">
+            <div class="label">תוכנית יסודות</div>
+            <span class="small muted">פרטים ›</span>
+          </div>
+          {found.active ? (
+            <>
+              <div class="big" style={{ margin: '6px 0' }}>
+                <span class="v" style={{ fontSize: '2.4rem' }}>{Math.min(found.active.week, FOUNDATION_WEEKS)}</span>
+                <span class="of">מתוך {FOUNDATION_WEEKS} שבועות</span>
+              </div>
+              <div class="progress-line"><i style={{ width: `${(Math.min(found.active.week, FOUNDATION_WEEKS) / FOUNDATION_WEEKS) * 100}%` }} /></div>
+            </>
+          ) : (
+            <p class="small" style={{ margin: '6px 0 0' }}>מתחילה ביום ראשון {formatDate(found.pending!.effectiveFrom)}</p>
+          )}
+        </a>
+      )}
+
+      {ready > 0 && ready < total && !inFoundation && (
         <div class="card">
           <div class="label">מבחן פתיחה</div>
           <div class="big" style={{ margin: '6px 0' }}>
@@ -176,7 +210,7 @@ export function PlanPreview({ p }: { p: import('../../../domain/engine/buildWork
   return (
     <div>
       <p class="small muted" style={{ margin: '4px 0 8px' }}>
-        {p.strength.length ? `כוח ${mins(p.strengthSec)} מתוך 60 דק' · ` : ''}סה"כ {mins(p.totalSec)} דק'{p.dayType === 'training' ? ' מתוך 90' : ' מתוך 60'}
+        {p.strength.length ? `כוח ${mins(p.strengthSec)} מתוך ${mins(p.strengthLimitSec)} דק' · ` : ''}סה"כ {mins(p.totalSec)} דק' מתוך {mins(p.totalLimitSec)}
       </p>
       {p.strength.map((it, i) => (
         <div class="plan-row" key={it.exercise.id + i}>

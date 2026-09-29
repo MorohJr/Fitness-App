@@ -68,7 +68,7 @@ describe('✅ בדיקת קבלה: פציעה פעילה חוסמת (מהמסד)
 describe('מאגר ועדכונים לנתונים קיימים', () => {
   it('המאגר נטען פעם אחת, ולא דורס שינויים שלך', async () => {
     const n = (await listExercises()).length;
-    expect(n).toBe(84);
+    expect(n).toBe(84 + 28); // 2.7: 28 תרגילים למתחילים
     await setExerciseStatus('ex-push-up', 'yellow');
     await updateExercise('ex-push-up', { targetMax: 15 });
     await initData();

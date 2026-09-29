@@ -1,5 +1,5 @@
 // משפחות תרגילים (נספח ג') ונתוני ברירת מחדל לכל משפחה
-export type Category = 'push' | 'pull' | 'legs' | 'core' | 'posture' | 'mobility';
+export type Category = 'push' | 'pull' | 'legs' | 'core' | 'posture' | 'mobility' | 'cardio';
 /** strength = יש סולם וסטטוס. pool = רשימה לבלוקי הגמישות, בלי סטטוס */
 export type FamilyKind = 'strength' | 'pool';
 /** תפקיד טיפוסי, קובע טווח ומנוחה ברירת מחדל (נספח ג') */
@@ -33,7 +33,9 @@ export const FAMILY_META = {
   posture: { name: 'יציבה וצוואר', category: 'posture', kind: 'pool', role: 'accessory' },
   jaw: { name: 'לסת ופנים', category: 'posture', kind: 'pool', role: 'accessory' },
   mobility: { name: 'מוביליטי', category: 'mobility', kind: 'pool', role: 'accessory' },
-  stretch: { name: 'מתיחות סטטיות', category: 'mobility', kind: 'pool', role: 'accessory' }
+  stretch: { name: 'מתיחות סטטיות', category: 'mobility', kind: 'pool', role: 'accessory' },
+  // 2.7: אירובי בלי קפיצות (R-BEG-4)
+  cardio: { name: 'כושר', category: 'cardio', kind: 'pool', role: 'accessory' }
 } as const satisfies Record<string, FamilyMeta>;
 
 export type FamilyId = keyof typeof FAMILY_META;
@@ -49,7 +51,8 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   legs: 'רגליים',
   core: 'ליבה',
   posture: 'יציבה, צוואר ופנים',
-  mobility: 'מוביליטי'
+  mobility: 'מוביליטי',
+  cardio: 'כושר'
 };
 
 /** מנוחה ברירת מחדל לפי תפקיד (נספח ג') */

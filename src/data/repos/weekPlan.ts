@@ -11,6 +11,16 @@ export async function listTemplates(): Promise<DayTemplate[]> {
   return alive((await getDb().data('dayTemplates').toArray()) as DayTemplate[]);
 }
 
+/** תבניות ברירת מחדל חדשות (למשל יסודות, 2.7) נוספות למסד קיים. לא נוגע בקיימות */
+export async function addMissingDefaultTemplates(): Promise<void> {
+  const db = getDb();
+  const ids = new Set((await db.data('dayTemplates').toCollection().primaryKeys()) as string[]);
+  const missing = DEFAULT_TEMPLATES.filter((t) => !ids.has(t.id));
+  if (!missing.length) return;
+  const base = newBase();
+  await db.data('dayTemplates').bulkAdd(missing.map((t) => ({ ...base, ...structuredClone(t) })));
+}
+
 export async function seedTemplatesIfEmpty(): Promise<void> {
   const db = getDb();
   if ((await db.data('dayTemplates').count()) > 0) return;
@@ -31,8 +41,11 @@ export async function getDayPlan(date: ISODate): Promise<DayPlan> {
   return dayPlanForDate(await listWeekPlanVersions(), date);
 }
 
-/** R-VER-2: שמירה חלה מיום ראשון הבא (או מהיום, אם זו התוכנית הראשונה) */
-export async function saveWeekPlan(days: DayPlan[]): Promise<WeekPlanVersion> {
+/**
+ * R-VER-2: שמירה חלה מיום ראשון הבא (או מהיום, אם זו התוכנית הראשונה).
+ * program: יסודות או רגילה (R-BEG). אם לא צוין, נשאר כמו בתוכנית שבתוקף באותו תאריך
+ */
+export async function saveWeekPlan(days: DayPlan[], program?: WeekPlanVersion['program']): Promise<WeekPlanVersion> {
   const errors = validateWeekDays(days, await listTemplates());
   if (errors.length) throw new Error(errors.join(', '));
   const db = getDb();
@@ -42,12 +55,13 @@ export async function saveWeekPlan(days: DayPlan[]): Promise<WeekPlanVersion> {
     const effectiveFrom = weekPlanEffectiveFrom(today, versions.length > 0);
     const plan = planVersionSave(versions, effectiveFrom, today);
     const cleanDays = days.map((d) => ({ dayType: d.dayType, templateId: d.templateId }));
+    const prog = program ?? versionForDate(versions, effectiveFrom)?.program ?? 'regular';
     if (plan.action === 'replace') {
-      const next = touched(versions.find((v) => v.id === plan.id)!, { days: cleanDays });
+      const next = touched(versions.find((v) => v.id === plan.id)!, { days: cleanDays, program: prog });
       await db.data('weekPlanVersions').put(next);
       return next;
     }
-    const rec: WeekPlanVersion = { ...newBase(), effectiveFrom, days: cleanDays };
+    const rec: WeekPlanVersion = { ...newBase(), effectiveFrom, days: cleanDays, program: prog };
     await db.data('weekPlanVersions').add(rec);
     return rec;
   });

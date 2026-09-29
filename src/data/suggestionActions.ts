@@ -10,6 +10,7 @@ import { addPhaseCalorieChange } from './repos/phases';
 import type { DayTemplate, Exercise, Workout } from '../domain/types';
 import { newBase, touched } from './repos/base';
 import { refreshToday } from './repos/dayLogs';
+import { switchToRegular } from './foundation';
 
 async function patchExercise(id: string, patch: Partial<Exercise>): Promise<void> {
   const ex = (await getDb().data('exercises').get(id)) as Exercise | undefined;
@@ -63,6 +64,10 @@ Object.assign(approveHandlers, {
   },
   recoverySwap: async () => {
     await refreshToday();
+  },
+  // R-BEG-6: התוכנית הרגילה מיום ראשון הבא
+  foundationDone: async () => {
+    await switchToRegular();
   },
   // R-PRG-8
   promote: async (s: Suggestion) => patchExercise(s.payload.exerciseId as string, { status: 'green' }),

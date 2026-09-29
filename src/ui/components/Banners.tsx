@@ -13,6 +13,7 @@ import { clock } from '../../data/clock';
 import { useLive } from '../hooks';
 import { updateStore, useStore } from '../store';
 import { navigate } from '../router';
+import { isDemoMode } from '../../data/demo/state';
 
 // נשמר בזיכרון בלבד: נסגר עד הפתיחה הבאה של האפליקציה
 const closedThisOpen: Record<string, boolean> = {};
@@ -22,12 +23,14 @@ export function Banners() {
   const update = useStore(updateStore);
   const data = useLive(async () => {
     const today = clock.today();
-    const [last, first, profile, ms, pending, dctx] = await Promise.all([
-      getMeta<string>('lastExportAt'), getMeta<string>('firstLaunchAt'), getProfile(), listMeasurements(), listPendingSuggestions(), getDeloadContext()
+    const [last, first, profile, ms, pending, dctx, demo] = await Promise.all([
+      getMeta<string>('lastExportAt'), getMeta<string>('firstLaunchAt'), getProfile(), listMeasurements(), listPendingSuggestions(), getDeloadContext(), isDemoMode()
     ]);
     const saturday = dayOfWeek(today) === 6;
     return {
-      backup: backupReminderDue(last ?? null, first ?? null, new Date(), profile?.settings.backupReminderDays ?? 3),
+      demo,
+      // בהדגמה אין תזכורת גיבוי: הנתונים האמיתיים שמורים בצד
+      backup: !demo && backupReminderDue(last ?? null, first ?? null, new Date(), profile?.settings.backupReminderDays ?? 3),
       backupDays: daysSince(last ?? null, new Date()),
       measure: measurementDue(ms[ms.length - 1]?.date ?? null, today),
       missed: !saturday && pending.some((s) => s.type === 'missedWorkout'),
@@ -50,6 +53,12 @@ export function Banners() {
 
   return (
     <div>
+ {data?.demo && (
+        <div class="banner demo">
+          <span class="grow">אתה צופה בנתוני הדגמה (R-DEMO)</span>
+          <button class="btn primary" onClick={() => navigate('/settings/backup')}>החזר את הנתונים שלי</button>
+        </div>
+      )}
       {update && <B k="update" text="גרסה חדשה של האפליקציה זמינה" action="רענן" go={() => update()} />}
       {data?.backup && <B k="backup" text={`${data.backupDays === null ? 'עוד לא ייצאת גיבוי.' : `עברו ${data.backupDays} ימים מהגיבוי האחרון.`} כדאי לייצא עכשיו.`} action="לגיבוי" go={() => navigate('/settings/backup')} />}
       {data?.missed && <B k="missed" text="יש אימון שהוחמץ השבוע. מה לעשות איתו?" action="לאימון" go={() => navigate('/workout')} />}

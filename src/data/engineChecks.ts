@@ -18,6 +18,7 @@ import { getDayLog, listDayLogs } from './repos/dayLogs';
 import { getHistory } from './repos/workouts';
 import { listExercises } from './repos/exercises';
 import { registerCheck } from './checks';
+import { foundationOn } from '../domain/rules/R-BEG';
 
 async function allSuggestions(): Promise<Suggestion[]> {
   return alive((await getDb().data('suggestions').toArray()) as Suggestion[]);
@@ -96,6 +97,8 @@ export async function checkEarlyDeload(): Promise<void> {
 /** R-GEN-3: קבוצה מחוץ ל-10–16 סטים שבועיים, שבועיים ברציפות */
 export async function checkVolume(): Promise<void> {
   const today = clock.today();
+  // R-BEG-5: בתוכנית יסודות הנפח נמוך בכוונה, בלי הצעות נפח
+  if (foundationOn(await listWeekPlanVersions(), today)) return;
   const [history, exs] = await Promise.all([getHistory(), listExercises()]);
   const byId = new Map(exs.map((e) => [e.id, e]));
   const out = volumeOutOfRange(history, byId, today);

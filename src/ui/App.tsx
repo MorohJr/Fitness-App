@@ -21,6 +21,7 @@ import { LibraryScreen } from './screens/workout/LibraryScreen';
 import { ExerciseScreen } from './screens/workout/ExerciseScreen';
 import { NewExerciseScreen } from './screens/workout/NewExerciseScreen';
 import { OpeningTestScreen } from './screens/workout/OpeningTestScreen';
+import { FoundationScreen } from './screens/workout/FoundationScreen';
 import { BodyScreen } from './screens/body/BodyScreen';
 import { InjuriesScreen } from './screens/body/InjuriesScreen';
 import { MeasureScreen } from './screens/body/MeasureScreen';
@@ -78,6 +79,8 @@ function screenFor(path: string) {
     case '/workout/library': return <LibraryScreen />;
     case '/workout/new-exercise': return <NewExerciseScreen />;
     case '/workout/test': return <OpeningTestScreen />;
+    case '/workout/test-foundation': return <OpeningTestScreen foundation />;
+    case '/workout/foundation': return <FoundationScreen />;
     case '/workout/run': return <RunWorkout />;
     case '/nutrition': return <LogScreen />;
     case '/nutrition/pantry': return <PantryScreen />;

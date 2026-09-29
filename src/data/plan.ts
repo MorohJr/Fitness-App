@@ -3,6 +3,7 @@ import type { DayPlan, ISODate, Suggestion, Workout } from '../domain/types';
 import { dayPlanForDate, weekSchedule } from '../domain/rules/R-DAY';
 import { isDeloadWeek, type DeloadContext } from '../domain/rules/R-DL';
 import { startOfWeek } from '../domain/calc/dates';
+import { deloadProgramStart, foundationOn, type FoundationInfo } from '../domain/rules/R-BEG';
 import { getDb } from './db';
 import { alive } from './repos/base';
 import { listWeekPlanVersions } from './repos/weekPlan';
@@ -35,14 +36,20 @@ export async function getEffectiveDayPlan(date: ISODate): Promise<DayPlan> {
   return (await effectivePlanResolver())(date);
 }
 
+/** R-BEG: האם התאריך בתוכנית יסודות, ובאיזה שבוע */
+export async function getFoundationInfo(date: ISODate): Promise<FoundationInfo | null> {
+  return foundationOn(await listWeekPlanVersions(), date);
+}
+
 export async function getDeloadContext(): Promise<DeloadContext> {
   const workouts = alive((await getDb().data('workouts').toArray()) as Workout[]).filter((w) => w.kind === 'regular' && w.status === 'completed');
-  const first = workouts.map((w) => w.date).sort()[0];
+  // R-BEG-5: הספירה מתחילה אחרי תוכנית היסודות
+  const programStart = deloadProgramStart(workouts.map((w) => w.date), await listWeekPlanVersions());
   const profile = await getProfile();
   const dec = await decided();
   const weeks = (t: Suggestion['type']) => dec.filter((s) => s.type === t && s.status === 'approved').map((s) => s.payload.weekStart as string);
   return {
-    programStart: first ? startOfWeek(first) : null,
+    programStart,
     every: profile?.settings.deloadEveryWeeks ?? 5,
     earlyWeeks: weeks('deloadEarly'),
     postponedWeeks: weeks('deloadPostpone')
@@ -50,6 +57,8 @@ export async function getDeloadContext(): Promise<DeloadContext> {
 }
 
 export async function isDeloadDate(date: ISODate): Promise<boolean> {
+  // R-BEG-5: בתוכנית יסודות אין הורדת עומס
+  if (await getFoundationInfo(date)) return false;
   return isDeloadWeek(date, await getDeloadContext());
 }
 

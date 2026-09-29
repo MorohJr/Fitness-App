@@ -19,6 +19,9 @@ import { useLive } from '../../hooks';
 import { BackLink, ErrorList, NumberField } from '../../components/Fields';
 import { showToast } from '../../store';
 import { shareOrDownload } from '../../share';
+import { exitDemo, isDemoMode, loadDemo } from '../../../data/demo/demo';
+import { renderDemoPhoto } from '../../demoPhotos';
+import { navigate } from '../../router';
 
 const TABLE_LABELS: Record<string, string> = {
   targetVersions: 'גרסאות יעדים',
@@ -35,21 +38,22 @@ const fmtDateTime = (iso: string) => new Date(iso).toLocaleString('he-IL', { dat
 
 export function BackupScreen() {
   const data = useLive(async () => {
-    const [profile, lastExportAt, undo, counts] = await Promise.all([getProfile(), getMeta<string>('lastExportAt'), hasUndoImport(), countRecords()]);
-    return { profile, lastExportAt, undo, counts };
+    const [profile, lastExportAt, undo, counts, demo] = await Promise.all([getProfile(), getMeta<string>('lastExportAt'), hasUndoImport(), countRecords(), isDemoMode()]);
+    return { profile, lastExportAt, undo, counts, demo };
   });
   const [includePhotos, setIncludePhotos] = useState(false);
   const [busy, setBusy] = useState(false);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmDemo, setConfirmDemo] = useState(false);
   const [persisted, setPersisted] = useState<boolean | null>(null);
   useEffect(() => {
     navigator.storage?.persisted?.().then(setPersisted).catch(() => setPersisted(null));
   }, []);
 
   if (!data) return null;
-  const { profile, lastExportAt, undo, counts } = data;
+  const { profile, lastExportAt, undo, counts, demo } = data;
 
   /** מריץ פעולה ומציג שגיאה אם נכשלה (לא בולעים שגיאות בשקט, 3.5) */
   async function run(fn: () => Promise<void>) {
@@ -120,10 +124,54 @@ export function BackupScreen() {
       });
     });
 
+  const doLoadDemo = () =>
+    run(async () => {
+      await loadDemo(renderDemoPhoto);
+      await initData();
+      setConfirmDemo(false);
+      showToast('נתוני ההדגמה נטענו');
+      navigate('/dashboard');
+    });
+
+  const doExitDemo = () =>
+    run(async () => {
+      await exitDemo();
+      await initData();
+      showToast('הנתונים שלך חזרו');
+    });
+
+  const demoCard = (
+    <div class="card">
+      <h2>נתוני הדגמה</h2>
+      {demo ? (
+        <>
+          <p class="small">אתה צופה בנתוני הדגמה. הנתונים שלך שמורים בצד, וחוזרים בלחיצה. עד אז ייבוא ומחיקה חסומים (R-DEMO-4).</p>
+          <button class="btn primary block" disabled={busy} onClick={doExitDemo}>החזר את הנתונים שלי</button>
+        </>
+      ) : !confirmDemo ? (
+        <>
+          <p class="small muted">חצי שנה של שימוש מלא, כדי לראות איך האפליקציה נראית עם נתונים: אימונים, תזונה, מדידות, תמונות ושיאים.</p>
+          <button class="btn block" disabled={busy} onClick={() => setConfirmDemo(true)}>טען נתוני הדגמה</button>
+        </>
+      ) : (
+        <div>
+          <div class="alert warn">
+            הנתונים שלך יוחלפו בנתוני הדגמה. הם נשמרים בצד במכשיר, ו"החזר את הנתונים שלי" מחזיר אותם בדיוק כמו שהם. בכל זאת מומלץ לייצא גיבוי קודם.
+          </div>
+          <div class="actions">
+            <button class="btn" onClick={() => setConfirmDemo(false)}>ביטול</button>
+            <button class="btn primary" disabled={busy} onClick={doLoadDemo}>{busy ? 'טוען…' : 'טען הדגמה'}</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div>
       <BackLink />
       <h1>גיבוי ושחזור</h1>
+      {demo && demoCard}
 
       <div class="alert danger">מחיקת האפליקציה ממסך הבית מוחקת את כל הנתונים. ייצא גיבוי לפני כן.</div>
       <ErrorList errors={errors} />
@@ -169,7 +217,7 @@ export function BackupScreen() {
         )}
       </div>
 
-      {undo && (
+      {undo && !demo && (
         <div class="card">
           <h2>{undo.reason === 'delete' ? 'בטל מחיקה' : 'בטל ייבוא'}</h2>
           <p class="small">
@@ -186,7 +234,7 @@ export function BackupScreen() {
         </div>
       )}
 
-      <div class="card">
+      {!demo && <div class="card">
         <h2>ייבוא</h2>
         <p class="small muted">ייבוא מחליף את כל הנתונים במכשיר הזה. לפני ההחלפה נשמר עותק של המצב הנוכחי, עם אפשרות לבטל.</p>
         <label class="btn block">
@@ -215,7 +263,9 @@ export function BackupScreen() {
             </div>
           </div>
         )}
-      </div>
+      </div>}
+
+      {!demo && demoCard}
 
       <div class="card">
         <h2>אחסון קבוע</h2>
@@ -231,7 +281,7 @@ export function BackupScreen() {
         )}
       </div>
 
-      <div class="card">
+      {!demo && <div class="card">
         <h2>מחיקת כל הנתונים</h2>
         {!confirmDelete ? (
           <button class="btn danger block" disabled={busy} onClick={() => setConfirmDelete(true)}>
@@ -248,7 +298,7 @@ export function BackupScreen() {
             </div>
           </div>
         )}
-      </div>
+      </div>}
     </div>
   );
 }

@@ -93,7 +93,7 @@ import { progressionSuggestions } from '../../domain/rules/R-PRG';
 import { availableAt, ladder } from '../../domain/calc/exercises';
 import { isBlocked } from '../../domain/rules/R-INJ';
 import { recoveryScore } from '../../domain/rules/R-REC';
-import { getEffectiveDayPlan, isDeloadDate, lowRecoveryDeclined } from '../plan';
+import { getEffectiveDayPlan, getFoundationInfo, isDeloadDate, lowRecoveryDeclined } from '../plan';
 import { listExercises } from './exercises';
 import { listInjuries } from './injuries';
 import { getProfile } from './profile';
@@ -115,7 +115,7 @@ export async function getHistory(): Promise<PastExercise[]> {
       const w = byId.get(we.workoutId)!;
       return {
         workoutId: w.id, date: w.date, kind: w.kind, isDeload: w.isDeload, location: w.location, exerciseId: we.exerciseId, family: we.family, level: we.level,
-        role: we.role, targetMin: we.targetMin, targetMax: we.targetMax, sets: setsBy.get(we.id) ?? []
+        role: we.role, statusAtTime: we.statusAtTime, targetMin: we.targetMin, targetMax: we.targetMax, sets: setsBy.get(we.id) ?? []
       } as PastExercise;
     })
     .filter((p) => p.sets.length > 0)
@@ -162,8 +162,8 @@ async function healedReturns(date: D, injuries: Injury[], history: PastExercise[
 /** בונה (בלי לשמור) את האימון של היום למיקום (R-GEN) */
 export async function planWorkout(date: D, locationId: LocationId, likeLast = false): Promise<PlannedWorkout> {
   const db = getDb();
-  const [plan, exercises, injuries, profile, history, deload, declined] = await Promise.all([
-    getEffectiveDayPlan(date), listExercises(), listInjuries(), getProfile(), getHistory(), isDeloadDate(date), lowRecoveryDeclined(date)
+  const [plan, exercises, injuries, profile, history, deload, declined, foundation] = await Promise.all([
+    getEffectiveDayPlan(date), listExercises(), listInjuries(), getProfile(), getHistory(), isDeloadDate(date), lowRecoveryDeclined(date), getFoundationInfo(date)
   ]);
   const templates = alive((await db.data('dayTemplates').toArray()) as DayTemplate[]);
   const template = templates.find((t) => t.id === plan.templateId) ?? null;
@@ -177,7 +177,7 @@ export async function planWorkout(date: D, locationId: LocationId, likeLast = fa
   }
   return buildWorkout({
     date, plan, template, exercises, injuries, location, history, isDeload: deload, lowRecoveryDeclined: declined,
-    healedReturns: await healedReturns(date, injuries, history), preferIds
+    healedReturns: await healedReturns(date, injuries, history), preferIds, foundationWeek: foundation?.week ?? null
   });
 }
 
@@ -190,7 +190,7 @@ export async function startWorkout(date: D, locationId: LocationId, planned: Pla
     ...newBase(), date, kind: 'regular', dayType: planned.dayType, templateName: planned.templateName, location: locationId, isDeload: planned.isDeload,
     recoveryScore: log ? recoveryScore(log).score : null, status: 'inProgress', startedAt: now, endedAt: null, blockMinutes: {}, feeling: null, notes: '',
     restEndsAt: null,
-    plan: { blocks: planned.blocks, strengthSec: planned.strengthSec, totalSec: planned.totalSec, skipped: planned.skipped, notes: planned.notes }
+    plan: { blocks: planned.blocks, strengthSec: planned.strengthSec, totalSec: planned.totalSec, totalLimitSec: planned.totalLimitSec, skipped: planned.skipped, notes: planned.notes }
   };
   await db.transaction('rw', db.data('workouts'), db.data('workoutExercises'), async () => {
     await db.data('workouts').add(w);

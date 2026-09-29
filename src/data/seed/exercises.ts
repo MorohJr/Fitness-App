@@ -273,3 +273,71 @@ const STRETCH_DEFS: Def[] = [
   { id: 'ex-childs-pose', name: "Child's Pose", fam: [['stretch', 12]], measure: 'time', pm: ['lowerBack'], sm: ['back', 'shoulders'], range: [45, 60], cues: ['ברכיים פתוחות, ישבן לעקבים', 'ידיים ארוכות קדימה', 'נשימה לתוך הגב'], safety: 'כרית מתחת לברכיים אם צריך' }
 ];
 DEFS.push(...STRETCH_DEFS);
+
+// ===== 2.7: למתחילים (R-BEG, נספח ג'). רמה 0 מתחת לרמה 1, כך שהרמות הקיימות לא משתנות =====
+// תרגיל שצריך כיסא לא דורש ציוד: מניחים שיש כיסא בכל מיקום
+const FOUNDATION_DEFS: Def[] = [
+  { id: 'ex-incline-pike-push-up', name: 'Incline Pike Push-up', fam: [['verticalPush', 0]], pm: ['shoulders'], sm: ['triceps', 'upperBack'], range: [8, 12],
+    cues: ['ידיים על כיסא יציב, רגליים על הרצפה', 'אגן גבוה, גוף בצורת V הפוכה', 'הראש יורד לכיוון הכיסא, מרפקים לא נפתחים'], safety: 'כיסא צמוד לקיר, שלא יזוז' },
+  { id: 'ex-towel-lat-pulldown', name: 'Towel Lat Pulldown', fam: [['verticalPull', 0]], pm: ['back'], sm: ['upperBack', 'biceps'], range: [10, 15],
+    cues: ['מגבת מתוחה בשתי ידיים מעל הראש', 'מושכים אותה לחזה ובמקביל מותחים לצדדים', 'שכמות למטה ופנימה, עצירה של 2 שניות'], safety: 'תנועה איטית, בלי לכופף את הצוואר' },
+  { id: 'ex-doorway-row', name: 'Doorway Row', fam: [['horizontalPull', 0]], pm: ['back', 'upperBack'], sm: ['biceps', 'forearms'], range: [8, 15],
+    cues: ['אחיזה במשקוף בשתי ידיים, רגליים קרוב לדלת', 'נוטים לאחור עם ידיים ישרות', 'מושכים את החזה למשקוף, שכמות נסגרות'], safety: 'רק משקוף יציב. רגליים קרוב יותר = קל יותר' },
+  { id: 'ex-chair-squat', name: 'Chair Squat', fam: [['squat', 0]], pm: ['quads', 'glutes'], sm: ['core'], range: [8, 15],
+    cues: ['יושבים על כיסא וקמים בלי ידיים', 'רגליים ברוחב כתפיים, משקל על העקבים', 'יורדים לאט עד נגיעה, לא נופלים לכיסא'], safety: 'כיסא יציב צמוד לקיר' },
+  { id: 'ex-wall-sit', name: 'Wall Sit', fam: [['squat', 0]], measure: 'time', pm: ['quads'], sm: ['glutes'], range: [20, 45],
+    cues: ['גב צמוד לקיר', 'יורדים עד זווית נוחה, לא חייב 90°', 'ברכיים מעל הקרסוליים'], safety: 'עצור אם הברך כואבת' },
+  { id: 'ex-supported-static-lunge', name: 'Supported Static Lunge', fam: [['singleLeg', 0]], uni: true, pm: ['quads', 'glutes'], sm: ['adductors'], range: [6, 12],
+    cues: ['יד על כיסא או קיר', 'צעד ארוך, יורדים ישר למטה', 'ברך קדמית בכיוון האצבעות'], safety: 'בהתחלה ירידה חלקית בלבד' },
+  { id: 'ex-bird-dog', name: 'Bird Dog', fam: [['coreFront', 0]], uni: true, pm: ['core'], sm: ['lowerBack', 'glutes'], range: [6, 10],
+    cues: ['עמידת שש, גב ישר', 'יד ורגל נגדיות נמתחות לאט', 'עצירה של 2 שניות, בלי לסובב את האגן'], safety: 'תנועה איטית, הגב לא שוקע' },
+  { id: 'ex-knee-side-plank', name: 'Knee Side Plank', fam: [['coreSide', 0]], measure: 'time', uni: true, pm: ['obliques'], sm: ['core'], range: [15, 30],
+    cues: ['על המרפק והברכיים, ברכיים כפופות', 'אגן גבוה, קו ישר מהברכיים לראש', 'נשימה רגילה'], safety: 'מרפק מתחת לכתף' },
+  { id: 'ex-knee-plank', name: 'Knee Plank', fam: [['plank', 0]], measure: 'time', pm: ['core'], sm: ['shoulders'], range: [15, 30],
+    cues: ['מרפקים מתחת לכתפיים, ברכיים על הרצפה', 'קו ישר מהברכיים לראש', 'בטן מכווצת'], safety: 'עוצרים כשהגב שוקע' },
+  { id: 'ex-incline-plank', name: 'Incline Plank', fam: [['plank', 0]], measure: 'time', pm: ['core'], sm: ['shoulders', 'glutes'], range: [15, 30],
+    cues: ['אמות או ידיים על כיסא או ספה', 'גוף ישר מהראש לעקבים', 'ישבן ובטן מכווצים'], safety: 'משטח יציב' },
+
+  // ===== כושר: אירובי בלי קפיצות (R-BEG-4). נמדד בשניות =====
+  { id: 'ex-brisk-walk', name: 'Brisk Walk', fam: [['cardio', 1]], measure: 'time', pm: ['quads', 'calves'], sm: ['glutes'], range: [1200, 1800],
+    cues: ['קצב שבו אפשר לדבר אבל לא לשיר', 'ידיים זזות עם הצעדים', 'גו זקוף, מבט קדימה'], safety: 'נעליים נוחות. אפשר להתחיל מ-10 דקות' },
+  { id: 'ex-marching', name: 'Marching in Place', fam: [['cardio', 2]], measure: 'time', pm: ['quads', 'calves'], sm: ['core'], range: [60, 180],
+    cues: ['ברכיים עולות לגובה נוח', 'ידיים זזות עם הרגליים', 'נשימה רגועה'], safety: 'בלי קפיצות' },
+  { id: 'ex-step-jack', name: 'Step Jack', fam: [['cardio', 3]], measure: 'time', pm: ['calves', 'shoulders'], sm: ['glutes'], range: [30, 90],
+    cues: ['צעד לצד עם ידיים למעלה', 'חוזרים למרכז ולצד השני', 'קצב קבוע'], safety: 'גרסה בלי קפיצה של Jumping Jack' },
+  { id: 'ex-standing-knee-drive', name: 'Standing Knee Drive', fam: [['cardio', 4]], measure: 'time', uni: true, pm: ['core'], sm: ['quads'], range: [30, 60],
+    cues: ['ידיים למעלה', 'ברך עולה והידיים יורדות אליה', 'מחליפים צד'], safety: 'יד על קיר אם צריך שיווי משקל' },
+  { id: 'ex-shadow-boxing', name: 'Shadow Boxing', fam: [['cardio', 5]], measure: 'time', pm: ['shoulders'], sm: ['core', 'calves'], range: [60, 180],
+    cues: ['עמידה יציבה, ברכיים רכות', 'אגרופים ישרים קדימה', 'נשיפה בכל אגרוף'], safety: 'בלי לנעול את המרפקים בכוח' },
+  { id: 'ex-stair-walking', name: 'Stair Walking', fam: [['cardio', 6]], measure: 'time', pm: ['quads', 'glutes'], sm: ['calves'], range: [120, 300],
+    cues: ['כל כף הרגל על המדרגה', 'יד על המעקה', 'קצב קבוע'], safety: 'ירידה איטית' },
+
+  // ===== מתיחות (תוספת) =====
+  { id: 'ex-hip-flexor-stretch', name: 'Hip Flexor Stretch', fam: [['stretch', 13]], measure: 'time', uni: true, pm: ['quads'], sm: ['core'], range: [30, 45],
+    cues: ['ברך אחורית על הרצפה, רגל קדמית ב-90°', 'מכווצים ישבן ודוחפים אגן קדימה', 'גו זקוף'], safety: 'כרית מתחת לברך' },
+  { id: 'ex-figure-4-stretch', name: 'Figure-4 Stretch', fam: [['stretch', 14]], measure: 'time', uni: true, pm: ['glutes'], sm: ['lowerBack'], range: [30, 45],
+    cues: ['שכיבה על הגב, קרסול על הברך השנייה', 'מושכים את הירך אליך', 'ראש וכתפיים על הרצפה'], safety: 'בלי ללחוץ על הברך' },
+  { id: 'ex-cobra-stretch', name: 'Cobra Stretch', fam: [['stretch', 15]], measure: 'time', pm: ['core'], sm: ['lowerBack'], range: [20, 40],
+    cues: ['שכיבה על הבטן, ידיים מתחת לכתפיים', 'מרימים את החזה, האגן על הרצפה', 'כתפיים רחוק מהאוזניים'], safety: 'רק לגובה שנוח לגב התחתון' },
+  { id: 'ex-supine-twist', name: 'Supine Twist', fam: [['stretch', 16]], measure: 'time', uni: true, pm: ['lowerBack'], sm: ['obliques', 'glutes'], range: [30, 45],
+    cues: ['שכיבה על הגב, ברכיים כפופות', 'הברכיים נופלות לצד, המבט לצד השני', 'כתפיים על הרצפה'], safety: 'תנועה איטית' },
+  { id: 'ex-neck-side-stretch', name: 'Neck Side Stretch', fam: [['stretch', 17]], measure: 'time', uni: true, pm: ['neck'], range: [20, 30],
+    cues: ['אוזן לכיוון הכתף', 'יד אחת מושכת בעדינות', 'הכתף הנגדית למטה'], safety: 'עדין מאוד, בלי כאב' },
+  { id: 'ex-knees-to-chest', name: 'Knees-to-Chest', fam: [['stretch', 18]], measure: 'time', pm: ['lowerBack'], sm: ['glutes'], range: [30, 45],
+    cues: ['שכיבה על הגב', 'ברכיים לחזה, ידיים מחבקות', 'נשימה איטית'], safety: 'הראש נשאר על הרצפה' },
+  { id: 'ex-standing-side-bend', name: 'Standing Side Bend', fam: [['stretch', 19]], measure: 'time', uni: true, pm: ['obliques'], sm: ['back'], range: [20, 30],
+    cues: ['עמידה, יד אחת מעל הראש', 'נוטים לצד בלי להתכופף קדימה', 'נושמים לתוך הצד הנמתח'], safety: 'טווח נוח' },
+
+  // ===== מוביליטי (תוספת) =====
+  { id: 'ex-arm-circles', name: 'Arm Circles', fam: [['mobility', 7]], pm: ['shoulders'], range: [10, 15],
+    cues: ['ידיים לצדדים', 'מעגלים קטנים שגדלים', 'קדימה ואחורה'], safety: 'בלי כאב בכתף' },
+  { id: 'ex-hip-circles', name: 'Hip Circles', fam: [['mobility', 8]], pm: ['glutes'], sm: ['lowerBack'], range: [8, 12],
+    cues: ['ידיים על המותניים', 'מעגלים גדולים עם האגן', 'לשני הכיוונים'], safety: 'תנועה רכה' },
+  { id: 'ex-leg-swings', name: 'Leg Swings', fam: [['mobility', 9]], uni: true, pm: ['hamstrings'], sm: ['glutes', 'adductors'], range: [10, 15],
+    cues: ['יד על קיר', 'נדנוד רגל קדימה ואחורה, ואז לצדדים', 'הטווח גדל בהדרגה'], safety: 'בלי תנופה חזקה' },
+  { id: 'ex-ankle-circles', name: 'Ankle Circles', fam: [['mobility', 10]], uni: true, pm: ['calves'], range: [8, 12],
+    cues: ['רגל באוויר', 'מעגלים איטיים עם הקרסול', 'לשני הכיוונים'], safety: 'יד על קיר' },
+  { id: 'ex-torso-rotations', name: 'Torso Rotations', fam: [['mobility', 11]], pm: ['obliques'], sm: ['upperBack'], range: [10, 15],
+    cues: ['רגליים ברוחב כתפיים', 'מסובבים את הגו לצדדים, ידיים רפויות', 'אגן יחסית יציב'], safety: 'בלי מהירות' }
+];
+DEFS.push(...FOUNDATION_DEFS);

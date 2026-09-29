@@ -6,6 +6,8 @@ import { isBlocked } from '../rules/R-INJ';
 import { deloadSets } from '../rules/R-DL';
 import { targetToday } from '../rules/R-PRG';
 import type { PastExercise } from './history';
+import { WALK_TEMPLATE_ID } from '../rules/R-DAY';
+import { FOUNDATION_BLOCK_MINUTES, FOUNDATION_STRENGTH_LIMIT_SEC, FOUNDATION_TOTAL_LIMIT_SEC, WALK_DAY_MINUTES, foundationSets } from '../rules/R-BEG';
 
 export const STRENGTH_LIMIT_SEC = 60 * 60;
 export const TOTAL_LIMIT_SEC = 90 * 60;
@@ -30,7 +32,7 @@ export interface PlannedItem {
   substituteFor: string | null;
 }
 
-export type BlockKey = 'warmup' | 'stretch' | 'posture' | 'jaw' | 'meditation' | 'mobility';
+export type BlockKey = 'warmup' | 'stretch' | 'posture' | 'jaw' | 'meditation' | 'mobility' | 'cardio';
 
 export interface PlannedBlock {
   key: BlockKey;
@@ -48,6 +50,9 @@ export interface PlannedWorkout {
   blocks: PlannedBlock[];
   strengthSec: number;
   totalSec: number;
+  /** מגבלות הזמן של האימון הזה (R-DAY-4, או R-BEG-4 ביסודות) */
+  strengthLimitSec: number;
+  totalLimitSec: number;
   skipped: { family: string; reason: string }[];
   notes: string[];
 }
@@ -67,6 +72,8 @@ export interface BuildInput {
   healedReturns: { injury: Injury; workoutNumber: number }[];
   /** R-GEN-7: להעדיף את התרגילים מהפעם הקודמת */
   preferIds?: string[];
+  /** R-BEG: השבוע בתוכנית היסודות, או null מחוץ לה */
+  foundationWeek?: number | null;
 }
 
 /** R-GEN-4: זמן תרגיל = סטים × זמן לסט + (סטים − 1) × מנוחה. חד-צדדי: זמן הסט כפול */
@@ -88,7 +95,14 @@ const familyMuscles = (exs: Exercise[], family: string) => new Set(ladder(exs, f
 
 export function buildWorkout(inp: BuildInput): PlannedWorkout {
   const { exercises, injuries, location, date } = inp;
-  const base: PlannedWorkout = { date, dayType: inp.plan.dayType, templateName: inp.template?.name ?? null, isDeload: inp.isDeload, strength: [], blocks: [], strengthSec: 0, totalSec: 0, skipped: [], notes: [] };
+  const foundation = inp.foundationWeek ?? null;
+  const strengthLimit = foundation ? FOUNDATION_STRENGTH_LIMIT_SEC : STRENGTH_LIMIT_SEC;
+  const base: PlannedWorkout = {
+    date, dayType: inp.plan.dayType, templateName: inp.template?.name ?? null, isDeload: inp.isDeload, strength: [], blocks: [], strengthSec: 0, totalSec: 0,
+    strengthLimitSec: inp.plan.dayType === 'training' ? strengthLimit : 0,
+    totalLimitSec: inp.plan.dayType === 'training' ? (foundation ? FOUNDATION_TOTAL_LIMIT_SEC : TOTAL_LIMIT_SEC) : 60 * 60,
+    skipped: [], notes: []
+  };
   const usable = (e: Exercise) => availableAt(e, location) && !isBlocked(e, injuries);
   const pool = (fam: FamilyId) => ladder(exercises, fam).filter(usable);
 
@@ -103,8 +117,19 @@ export function buildWorkout(inp: BuildInput): PlannedWorkout {
     const block = (key: BlockKey, title: string, minutes: number, list: Exercise[]): PlannedBlock => ({
       key, title, minutes, items: list.map((e) => ({ exerciseId: e.id, name: e.name, detail: detailOf(e) }))
     });
+    // R-BEG-4: יום הליכה ומוביליטי
+    if (inp.template?.id === WALK_TEMPLATE_ID) {
+      const walk = pool('cardio').filter((e) => e.targetMax >= 20 * 60).slice(0, 1);
+      base.blocks = [
+        block('cardio', 'הליכה מהירה', WALK_DAY_MINUTES.cardio, walk.length ? walk : pool('cardio').slice(0, 2)),
+        block('mobility', 'מוביליטי', WALK_DAY_MINUTES.mobility, pool('mobility').slice(0, 6)),
+        block('stretch', 'מתיחות', WALK_DAY_MINUTES.stretch, pool('stretch').slice(0, 6))
+      ];
+      base.totalSec = base.blocks.reduce((a, b) => a + b.minutes * 60, 0);
+      return base;
+    }
     base.blocks = [
-      block('mobility', 'מוביליטי עמוק', RECOVERY_MINUTES.mobility, pool('mobility')),
+      block('mobility', 'מוביליטי עמוק', RECOVERY_MINUTES.mobility, pool('mobility').slice(0, 8)),
       block('stretch', 'מתיחות ארוכות', RECOVERY_MINUTES.stretch, pool('stretch').slice(0, 8)),
       block('posture', 'יציבה וצוואר', RECOVERY_MINUTES.posture, pool('posture')),
       block('jaw', 'לסת ומיואינג', RECOVERY_MINUTES.jaw, pool('jaw')),
@@ -161,6 +186,7 @@ export function buildWorkout(inp: BuildInput): PlannedWorkout {
     let sets = slot.sets;
     let rpeTarget: string | null = null;
     const notes: string[] = [];
+    if (foundation) ({ sets, rpeTarget } = foundationSets(slot.sets, foundation));
     if (inp.isDeload) {
       sets = deloadSets(sets);
       rpeTarget = '6–7';
@@ -186,7 +212,8 @@ export function buildWorkout(inp: BuildInput): PlannedWorkout {
   });
 
   // R-GEN-5: התאמה ל-60 דקות. טכניקה ← אביזרים ← משניים; ראשי לא מתחת ל-2; ואז האביזר האחרון מוסר
-  const over = () => strengthSeconds(items) > STRENGTH_LIMIT_SEC;
+  const over = () => strengthSeconds(items) > strengthLimit;
+  const limitMin = strengthLimit / 60;
   const reduce = (prio: SlotPriority, floor: number) => {
     let changed = true;
     while (over() && changed) {
@@ -205,13 +232,13 @@ export function buildWorkout(inp: BuildInput): PlannedWorkout {
   while (over()) {
     const idx = items.map((it) => it.priority).lastIndexOf('accessory');
     if (idx < 0) break;
-    base.notes.push(`${items[idx].exercise.name} הוסר כדי לעמוד ב-60 דקות (R-GEN-5)`);
+    base.notes.push(`${items[idx].exercise.name} הוסר כדי לעמוד ב-${limitMin} דקות (R-GEN-5)`);
     items.splice(idx, 1);
   }
   while (over()) {
     const idx = items.map((it) => it.priority).lastIndexOf('secondary');
     if (idx < 0) break;
-    base.notes.push(`${items[idx].exercise.name} הוסר כדי לעמוד ב-60 דקות`);
+    base.notes.push(`${items[idx].exercise.name} הוסר כדי לעמוד ב-${limitMin} דקות`);
     items.splice(idx, 1);
   }
 
@@ -249,25 +276,35 @@ export function buildWorkout(inp: BuildInput): PlannedWorkout {
   const dayNum = Number(date.replaceAll('-', ''));
   const warm = byOverlap(pool('mobility')).slice(0, 3);
   const first = items.find((i) => i.role === 'work');
+  const M = foundation ? FOUNDATION_BLOCK_MINUTES : { ...BLOCK_MINUTES, cardio: 0 };
+  const toItem = (e: Exercise) => ({ exerciseId: e.id, name: e.name, detail: detailOf(e) });
+  // R-BEG-4: כושר קצר בלי קפיצות, אחרי הכוח
+  const cardio: PlannedBlock[] = foundation
+    ? [{ key: 'cardio', title: 'כושר (בלי קפיצות)', minutes: M.cardio, items: rot(pool('cardio').filter((e) => e.targetMax <= 180), dayNum).slice(0, 2).map(toItem) }]
+    : [];
   base.blocks = [
     {
-      key: 'warmup', title: 'חימום דינמי (חובה)', minutes: BLOCK_MINUTES.warmup,
+      key: 'warmup', title: 'חימום דינמי (חובה)', minutes: M.warmup,
       items: [
         ...warm.map((e) => ({ exerciseId: e.id, name: e.name, detail: detailOf(e) })),
         ...(first ? [{ exerciseId: first.exercise.id, name: first.exercise.name, detail: 'סט קל אחד, חצי מיעד היום' }] : [])
       ]
     },
-    { key: 'stretch', title: 'מתיחות סטטיות', minutes: BLOCK_MINUTES.stretch, items: byOverlap(pool('stretch')).slice(0, 5).map((e) => ({ exerciseId: e.id, name: e.name, detail: detailOf(e) })) },
-    { key: 'posture', title: 'יציבה וצוואר', minutes: BLOCK_MINUTES.posture, items: rot(pool('posture'), dayNum).slice(0, 2).map((e) => ({ exerciseId: e.id, name: e.name, detail: detailOf(e) })) },
-    { key: 'jaw', title: 'לסת ומיואינג', minutes: BLOCK_MINUTES.jaw, items: pool('jaw').map((e) => ({ exerciseId: e.id, name: e.name, detail: detailOf(e) })) },
-    { key: 'meditation', title: 'נשימה ומדיטציה', minutes: BLOCK_MINUTES.meditation, items: [{ exerciseId: null, name: 'נשימה 4-4-6', detail: 'שאיפה 4, עצירה 4, נשיפה 6' }] }
+    ...cardio,
+    { key: 'stretch', title: 'מתיחות סטטיות', minutes: M.stretch, items: byOverlap(pool('stretch')).slice(0, foundation ? 4 : 5).map(toItem) },
+    { key: 'posture', title: 'יציבה וצוואר', minutes: M.posture, items: rot(pool('posture'), dayNum).slice(0, foundation ? 1 : 2).map(toItem) },
+    { key: 'jaw', title: 'לסת ומיואינג', minutes: M.jaw, items: pool('jaw').map(toItem) },
+    { key: 'meditation', title: 'נשימה ומדיטציה', minutes: M.meditation, items: [{ exerciseId: null, name: 'נשימה 4-4-6', detail: 'שאיפה 4, עצירה 4, נשיפה 6' }] }
   ];
   base.totalSec = base.strengthSec + base.blocks.reduce((a, b) => a + b.minutes * 60, 0);
+  if (foundation) base.notes.push(`תוכנית יסודות, שבוע ${foundation} (R-BEG-4)`);
   if (inp.isDeload) base.notes.push('שבוע הורדת עומס: חצי מהסטים, RPE 6–7. בלוקי הגמישות מלאים (R-DL-2)');
   return base;
 }
 
 function detailOf(e: Exercise): string {
+  // זמן ארוך (כמו הליכה) מוצג בדקות
+  if (e.measure === 'time' && e.targetMax >= 180) return `${Math.round(e.targetMin / 60)}–${Math.round(e.targetMax / 60)} דק'${e.unilateral ? ' לכל צד' : ''}`;
   const u = e.measure === 'time' ? 'שנ\'' : 'חזרות';
   return `${e.targetMin}–${e.targetMax} ${u}${e.unilateral ? ' לכל צד' : ''}`;
 }

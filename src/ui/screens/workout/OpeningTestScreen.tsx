@@ -9,6 +9,7 @@ import { FAMILY_META, STRENGTH_FAMILIES, type FamilyId } from '../../../domain/f
 import { availableAt, ladder, levelIn } from '../../../domain/calc/exercises';
 import { evaluateTest, familyReady, familyStatusChanges, testValue, type TestOutcome } from '../../../domain/rules/opening-test';
 import { isBlocked } from '../../../domain/rules/R-INJ';
+import { FOUNDATION_FAMILIES } from '../../../domain/rules/R-BEG';
 import { useLive } from '../../hooks';
 import { LOCATION_LABELS, MEASURE_UNIT, STATUS_EMOJI, STATUS_LABELS } from '../../labels';
 import { BackLink, ErrorList, NumberField, Segmented } from '../../components/Fields';
@@ -23,7 +24,9 @@ function best(exs: Exercise[], f: string): Exercise | undefined {
   return ladder(exs, f).filter((e) => e.status === 'green' || e.status === 'yellow').pop();
 }
 
-export function OpeningTestScreen() {
+/** foundation = בדיקת הרמה של תוכנית היסודות: רק 11 המשפחות, ומומלץ מרמה 0 (R-BEG-2) */
+export function OpeningTestScreen({ foundation = false }: { foundation?: boolean }) {
+  const FAMS = foundation ? FOUNDATION_FAMILIES : STRENGTH_FAMILIES;
   const data = useLive(async () => {
     const [exercises, injuries, profile] = await Promise.all([listExercises(), listInjuries(), getProfile()]);
     return { exercises, injuries, profile };
@@ -33,7 +36,7 @@ export function OpeningTestScreen() {
   if (!data?.profile) return null;
   const { exercises, injuries, profile } = data;
   const location = profile.locations.find((l) => l.id === loc)!;
-  const ready = STRENGTH_FAMILIES.filter((f) => familyReady(exercises, f)).length;
+  const ready = FAMS.filter((f) => familyReady(exercises, f)).length;
 
   if (family) {
     return (
@@ -42,6 +45,7 @@ export function OpeningTestScreen() {
         exercises={exercises}
         injuries={injuries}
         location={location}
+        foundation={foundation}
         onClose={() => setFamily(null)}
       />
     );
@@ -49,13 +53,15 @@ export function OpeningTestScreen() {
 
   return (
     <div>
-      <BackLink to="/workout" label="אימון" />
-      <h1>מבחן פתיחה</h1>
+      {foundation ? <BackLink to="/workout/foundation" label="תוכנית יסודות" /> : <BackLink to="/workout" label="אימון" />}
+      <h1>{foundation ? 'בדיקת רמה' : 'מבחן פתיחה'}</h1>
       <p class="muted small">
-        לכל משפחה: סט מקסימלי אחד בטכניקה נקייה, מהרמה שנראית לך מתאימה. האפליקציה אומרת אם לעלות רמה או לרדת. אפשר לבדוק כל משפחה בנפרד, בכל יום.
+        {foundation
+          ? 'לכל משפחה: סט אחד, כמה שיוצא בטכניקה נקייה, מהרמה הכי קלה (0). אם היה קל, האפליקציה תציע לבדוק את הרמה הבאה. אפשר לבדוק כל משפחה בנפרד, בכל יום.'
+          : 'לכל משפחה: סט מקסימלי אחד בטכניקה נקייה, מהרמה שנראית לך מתאימה. האפליקציה אומרת אם לעלות רמה או לרדת. אפשר לבדוק כל משפחה בנפרד, בכל יום.'}
       </p>
-      <div class="progress-line"><i style={{ width: `${(ready / STRENGTH_FAMILIES.length) * 100}%` }} /></div>
-      <p class="small muted">{ready} מתוך {STRENGTH_FAMILIES.length} משפחות מוכנות</p>
+      <div class="progress-line"><i style={{ width: `${(ready / FAMS.length) * 100}%` }} /></div>
+      <p class="small muted">{ready} מתוך {FAMS.length} משפחות מוכנות</p>
       <Segmented<LocationId>
         label="איפה אתה עכשיו?"
         value={loc}
@@ -63,7 +69,7 @@ export function OpeningTestScreen() {
         onChange={setLoc}
       />
       <div class="list">
-        {STRENGTH_FAMILIES.map((f) => {
+        {FAMS.map((f) => {
           const b = best(exercises, f);
           const any = ladder(exercises, f).some((e) => availableAt(e, location) && !isBlocked(e, injuries));
           return (
@@ -100,7 +106,7 @@ interface Done {
   outcome: TestOutcome;
 }
 
-function FamilyTest({ family, exercises, injuries, location, onClose }: { family: FamilyId; exercises: Exercise[]; injuries: Injury[]; location: LocationSetup; onClose: () => void }) {
+function FamilyTest({ family, exercises, injuries, location, foundation, onClose }: { family: FamilyId; exercises: Exercise[]; injuries: Injury[]; location: LocationSetup; foundation: boolean; onClose: () => void }) {
   const lad = ladder(exercises, family);
   const usable = (e: Exercise) => availableAt(e, location) && !isBlocked(e, injuries);
   const [done, setDone] = useState<Done[]>([]);
@@ -231,6 +237,7 @@ function FamilyTest({ family, exercises, injuries, location, onClose }: { family
       {!current && (
         <div class="card">
           <h2>{choices ? 'הבדיקה הבאה' : 'בחר רמה להתחיל ממנה'}</h2>
+          {foundation && !choices && <p class="small muted">מומלץ להתחיל מהרמה הכי קלה שזמינה כאן.</p>}
           {(choices ?? lad).map((e) => {
             const ok = usable(e);
             return (

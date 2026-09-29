@@ -21,6 +21,8 @@ export interface PastExercise {
   family: string;
   level: number;
   role: 'work' | 'technique' | 'warmup';
+  /** 📸 סטטוס בזמן האימון. במבחן: התוצאה (R-RANK-2) */
+  statusAtTime?: string | null;
   targetMin: number;
   targetMax: number;
   sets: PastSet[];

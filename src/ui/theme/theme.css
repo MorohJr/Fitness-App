@@ -354,3 +354,14 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
 /* ההודעה התחתונה לא חוסמת לחיצות על מה שמתחתיה, חוץ מהכפתור שלה */
 .toast { pointer-events: none; }
 .toast button { pointer-events: auto; }
+
+/* דמות ודרגה (R-RANK) */
+.rank-card { display: flex; gap: 14px; align-items: center; color: var(--text); }
+.rank-card .grow { min-width: 0; }
+.rank-pips { display: flex; gap: 4px; }
+.rank-pips i { flex: 1; height: 8px; border-radius: 2px; background: var(--track); }
+.rank-pips i.on { background: var(--accent); }
+.rank-next { margin: 6px 0 0; padding-inline-start: 18px; }
+.avatar-strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; direction: rtl; }
+.avatar-cell { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; color: var(--text); }
+.banner.demo { border: 2px dashed var(--accent-ink); }

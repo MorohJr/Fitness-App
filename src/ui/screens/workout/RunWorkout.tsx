@@ -30,6 +30,8 @@ function RunBar({ w }: { w: Workout }) {
   const signaled = useRef<number | null>(null);
   const [flash, setFlash] = useState(0);
   const elapsed = (now - new Date(w.startedAt!).getTime()) / 1000;
+  // המגבלה נשמרה עם האימון (60 ביסודות, R-BEG-4). אימונים ישנים: 90
+  const limitMin = Math.round(((w.plan as { totalLimitSec?: number } | undefined)?.totalLimitSec ?? TOTAL_LIMIT_MIN * 60) / 60);
   const restLeft = w.restEndsAt ? Math.ceil((w.restEndsAt - now) / 1000) : null;
   useEffect(() => {
     // סיום מנוחה: הבהוב על כל המסך וצליל קצר (3.6). מחושב משעת הסיום, גם אחרי נעילת מסך
@@ -47,7 +49,7 @@ function RunBar({ w }: { w: Workout }) {
       <div class="row">
         <div>
           <div class="label">זמן אימון</div>
-          <div class="timer" style={elapsed > TOTAL_LIMIT_MIN * 60 ? { color: 'var(--warn)' } : undefined}>{mmss(elapsed)} <span class="small muted">/ {TOTAL_LIMIT_MIN}:00</span></div>
+          <div class="timer" style={elapsed > limitMin * 60 ? { color: 'var(--warn)' } : undefined}>{mmss(elapsed)} <span class="small muted">/ {limitMin}:00</span></div>
         </div>
         <span class="badge">{w.templateName ?? 'התאוששות'}{w.isDeload ? ' · הורדת עומס' : ''}</span>
       </div>

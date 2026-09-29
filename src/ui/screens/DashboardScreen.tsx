@@ -12,7 +12,10 @@ import { listSupplementLogs, listSupplements } from '../../data/repos/supplement
 import { listMeasurements } from '../../data/repos/body';
 import { activeWorkout, workoutsOn } from '../../data/repos/workouts';
 import { getDayChecks, summaryWeek, weeklySummary } from '../../data/adherence';
-import { getDeloadContext, getEffectiveDayPlan } from '../../data/plan';
+import { getDeloadContext, getEffectiveDayPlan, getFoundationInfo } from '../../data/plan';
+import { FOUNDATION_WEEKS } from '../../domain/rules/R-BEG';
+import { getRank } from '../../data/rank';
+import { RankCard } from '../components/RankCard';
 import { STRENGTH_FAMILIES } from '../../domain/families';
 import { familyReady } from '../../domain/rules/opening-test';
 import { activePhase, phaseCaloriesOn } from '../../domain/rules/phase';
@@ -44,6 +47,8 @@ export function DashboardScreen() {
       activeWorkout(), workoutsOn(today)
     ]);
     const checks = await getDayChecks(addDays(today, -40), today);
+    const foundation = await getFoundationInfo(today);
+    const rank = await getRank(today);
     const sw = summaryWeek(today, clock.now());
     const summary = sw ? await weeklySummary(sw) : null;
     const summaryChecks = sw ? adherencePct(await getDayChecks(sw, addDays(sw, 6)), addDays(sw, 7), 7) : null;
@@ -51,16 +56,16 @@ export function DashboardScreen() {
       log, profile, hasTargets: versions.length > 0, phase: activePhase(phases, today), template: templates.find((t) => t.id === plan.templateId), plan,
       exported: !!lastExport, testReady: STRENGTH_FAMILIES.filter((f) => familyReady(exs, f)).length, eaten: sumLogs(food),
       sups: sups.filter((s) => s.active), supTaken: supLogs.filter((l) => l.taken).length, ms, logs, checks, deload: isDeloadWeek(today, dctx),
-      active, doneToday: todays.find((w) => w.kind === 'regular' && w.status === 'completed'), summary, summaryChecks
+      active, doneToday: todays.find((w) => w.kind === 'regular' && w.status === 'completed'), summary, summaryChecks, foundation, rank
     };
   }, [today]);
   const locSel = useStore(locationStore);
   const loc: LocationId | null = locSel ?? (data?.profile?.locations.find((l) => l.enabled)?.id ?? null);
   const preview = useLive(async () => (loc ? planWorkout(today, loc) : null), [today, loc]);
   if (!data) return null;
-  const { log, profile, hasTargets, phase, plan, template, exported, testReady, eaten, sups, supTaken, ms, logs, checks, deload, active, doneToday, summary, summaryChecks } = data;
+  const { log, profile, hasTargets, phase, plan, template, exported, testReady, eaten, sups, supTaken, ms, logs, checks, deload, active, doneToday, summary, summaryChecks, foundation, rank } = data;
   const profileDone = !!(profile?.sex && profile.birthDate && profile.heightCm);
-  const testDone = testReady === STRENGTH_FAMILIES.length;
+  const testDone = testReady === STRENGTH_FAMILIES.length || !!foundation;
   const word = plan.dayType === 'training' ? template?.name ?? 'אימון' : plan.dayType === 'activeRecovery' ? 'התאוששות' : 'מנוחה';
   const rec = log ? recoveryScore(log) : null;
   const st = streak(checks, today);
@@ -94,6 +99,7 @@ export function DashboardScreen() {
         <span class="badge accent">{DAY_TYPE_LABELS[plan.dayType]}</span>
         {phase && <span class="badge">{PHASE_LABELS[phase.type]}</span>}
         {deload && <span class="badge warn">שבוע הורדת עומס</span>}
+        {foundation && <a class="badge" href="#/workout/foundation">יסודות · שבוע {Math.min(foundation.week, FOUNDATION_WEEKS)} מתוך {FOUNDATION_WEEKS}</a>}
         {st > 0 && <span class="badge">🔥 {st}</span>}
       </div>
 
@@ -103,7 +109,11 @@ export function DashboardScreen() {
           <div class="list">
             <a href="#/settings/profile"><span class="grow">פרופיל: מין, תאריך לידה, גובה</span>{profileDone && <span class="done">✓</span>}</a>
             <a href="#/settings/targets"><span class="grow">יעדים בעזרת המחשבון</span>{hasTargets && <span class="done">✓</span>}</a>
-            <a href="#/workout/test"><span class="grow">מבחן פתיחה ({testReady}/{STRENGTH_FAMILIES.length})</span>{testDone && <span class="done">✓</span>}</a>
+            {testReady === 0 ? (
+              <a href="#/workout"><span class="grow">בדיקה ראשונה: תוכנית יסודות או מבחן פתיחה</span></a>
+            ) : (
+              <a href="#/workout/test"><span class="grow">מבחן פתיחה ({testReady}/{STRENGTH_FAMILIES.length})</span>{testDone && <span class="done">✓</span>}</a>
+            )}
             <a href="#/settings/backup"><span class="grow">גיבוי ראשון</span>{exported && <span class="done">✓</span>}</a>
           </div>
         </>
@@ -115,6 +125,8 @@ export function DashboardScreen() {
         <a class="btn" href="#/nutrition">רשום ארוחה</a>
         <button class="btn" onClick={async () => { const prev = await addWater(today, 250); showToast('+250 מ"ל', () => updateDayLog(today, { waterMl: prev }).then(() => undefined)); }}>+ מים</button>
       </div>
+
+      <RankCard rank={rank} />
 
       <SuggestionsList />
 

@@ -36,7 +36,31 @@ export const DEFAULT_TEMPLATES: SeedTemplate[] = [
     slots: [slot('singleLeg', 'main'), slot('hamstring', 'main'), slot('hipHinge', 'secondary'), slot('calves', 'accessory'), slot('coreSide', 'accessory'), slot('plank', 'accessory')]
   },
   // יום התאוששות פעילה (R-DAY-2): בלי עבודת כוח
-  { id: 'tpl-recovery', name: 'מוביליטי ויציבה', kind: 'recovery', slots: [] }
+  { id: 'tpl-recovery', name: 'מוביליטי ויציבה', kind: 'recovery', slots: [] },
+  // תוכנית יסודות (R-BEG-3, נספח ב')
+  {
+    id: 'tpl-found-upper', name: "יסודות א': פלג גוף עליון", kind: 'training',
+    slots: [slot('horizontalPush', 'main'), slot('horizontalPull', 'main'), slot('verticalPush', 'secondary'), slot('verticalPull', 'secondary'), slot('plank', 'accessory')]
+  },
+  {
+    id: 'tpl-found-lower', name: "יסודות ב': רגליים וליבה", kind: 'training',
+    slots: [slot('squat', 'main'), slot('hipHinge', 'main'), slot('singleLeg', 'secondary'), slot('calves', 'accessory'), slot('coreFront', 'accessory'), slot('coreSide', 'accessory')]
+  },
+  { id: 'tpl-walk', name: 'הליכה ומוביליטי', kind: 'recovery', slots: [] }
+];
+
+/** תבנית יום ההליכה (R-BEG-4): הליכה, מוביליטי ומתיחות */
+export const WALK_TEMPLATE_ID = 'tpl-walk';
+
+/** R-BEG-3: שבוע יסודות. אינדקס 0 = ראשון */
+export const FOUNDATION_WEEK_DAYS: DayPlan[] = [
+  { dayType: 'training', templateId: 'tpl-found-upper' },
+  { dayType: 'training', templateId: 'tpl-found-lower' },
+  { dayType: 'activeRecovery', templateId: WALK_TEMPLATE_ID },
+  { dayType: 'activeRecovery', templateId: 'tpl-recovery' },
+  { dayType: 'training', templateId: 'tpl-found-upper' },
+  { dayType: 'training', templateId: 'tpl-found-lower' },
+  { dayType: 'rest', templateId: null }
 ];
 
 /** R-DAY-1: תוכנית ברירת מחדל. אינדקס 0 = ראשון */

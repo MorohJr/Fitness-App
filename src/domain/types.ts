@@ -96,6 +96,8 @@ export interface DayPlan {
 export interface WeekPlanVersion extends BaseRecord {
   effectiveFrom: ISODate;
   days: DayPlan[];
+  /** תוכנית יסודות (R-BEG). חסר = רגילה */
+  program?: 'foundation' | 'regular';
 }
 
 export interface TemplateSlot {
@@ -343,7 +345,7 @@ export interface ShoppingItem extends BaseRecord {
 
 export type SuggestionType =
   | 'promote' | 'advance' | 'regress' | 'tempo' | 'load' | 'stayOrEasier'
-  | 'calories' | 'deloadEarly' | 'deloadPostpone' | 'recoverySwap' | 'missedWorkout' | 'volume' | 'photoCleanup';
+  | 'calories' | 'deloadEarly' | 'deloadPostpone' | 'recoverySwap' | 'missedWorkout' | 'volume' | 'photoCleanup' | 'foundationDone';
 
 export interface Suggestion extends BaseRecord {
   type: SuggestionType;

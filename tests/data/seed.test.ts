@@ -6,6 +6,7 @@ import { MUSCLE_IDS } from '../../src/domain/muscles';
 import { DEFAULT_EQUIPMENT, DEFAULT_LOCATIONS } from '../../src/data/seed/defaults';
 import { availableAt, ladder } from '../../src/domain/calc/exercises';
 import type { Exercise } from '../../src/domain/types';
+import { FOUNDATION_FAMILIES } from '../../src/domain/rules/R-BEG';
 
 const all: Exercise[] = buildSeedExercises().map((e) => ({ ...e, createdAt: '', updatedAt: '', deletedAt: null }));
 
@@ -14,18 +15,30 @@ describe('שלמות מאגר התרגילים (נספח ג׳)', () => {
     expect(new Set(all.map((e) => e.id)).size).toBe(all.length);
     expect(new Set(all.map((e) => e.name)).size).toBe(all.length);
   });
-  it('כל משפחה קיימת, והרמות בכל סולם רציפות מ-1', () => {
+  it('כל משפחה קיימת, והרמות בכל סולם רציפות מ-1 (או מ-0, רמת יסוד 2.7)', () => {
     for (const f of FAMILY_IDS) {
       const levels = [...new Set(ladder(all, f).map((e) => e.families.find((x) => x.family === f)!.level))];
       expect(levels.length, f).toBeGreaterThan(0);
-      expect(levels, f).toEqual(levels.map((_, i) => i + 1));
+      const from = levels[0] === 0 ? 0 : 1;
+      expect(levels, f).toEqual(levels.map((_, i) => i + from));
     }
+  });
+  it('רמה 0 לכל 8 המשפחות בנספח ג׳ (תוספת 2.7), ו-6 תרגילי כושר', () => {
+    const zero = new Set(all.filter((e) => e.families.some((f) => f.level === 0)).flatMap((e) => e.familyIds));
+    expect([...zero].sort()).toEqual(['coreFront', 'coreSide', 'horizontalPull', 'plank', 'singleLeg', 'squat', 'verticalPull', 'verticalPush']);
+    expect(ladder(all, 'cardio')).toHaveLength(6);
+    expect(all).toHaveLength(84 + 28);
+  });
+  it('בבית, עם ציוד ברירת המחדל, יש תרגיל לכל משפחות היסודות (R-BEG)', () => {
+    const home = DEFAULT_LOCATIONS.find((l) => l.id === 'home')!;
+    for (const f of FOUNDATION_FAMILIES) expect(ladder(all, f).some((e) => availableAt(e, home)), f).toBe(true);
   });
   it('כל משפחה בתבניות קיימת במאגר, ואין משבצת "ליבה" כללית', () => {
     for (const t of DEFAULT_TEMPLATES) for (const s of t.slots) expect(FAMILY_IDS, s.family).toContain(s.family);
   });
   it('כל משפחת ליבה מקבלת פעמיים בשבוע (נספח ב׳)', () => {
-    const count = (f: string) => DEFAULT_TEMPLATES.flatMap((t) => t.slots).filter((s) => s.family === f).length;
+    const regular = DEFAULT_TEMPLATES.filter((t) => !t.id.startsWith('tpl-found'));
+    const count = (f: string) => regular.flatMap((t) => t.slots).filter((s) => s.family === f).length;
     expect([count('coreFront'), count('coreSide'), count('plank')]).toEqual([2, 2, 2]);
   });
   it('שרירים, ציוד וטווחים תקינים', () => {
@@ -60,9 +73,9 @@ describe('שלמות מאגר התרגילים (נספח ג׳)', () => {
   it('17 משפחות כוח (כל נספח ג׳ חוץ מיציבה, לסת ומוביליטי)', () => {
     expect(STRENGTH_FAMILIES).toHaveLength(17);
   });
-  it('חלופה לבית: Dumbbell Row באותה רמה כמו Australian Row', () => {
+  it('חלופה לבית: Dumbbell Row באותה רמה כמו Australian Row (ומתחתיה Doorway Row, רמה 0)', () => {
     const home = DEFAULT_LOCATIONS.find((l) => l.id === 'home')!;
     const row = ladder(all, 'horizontalPull').filter((e) => availableAt(e, home));
-    expect(row.map((e) => e.id)).toEqual(['ex-dumbbell-row']);
+    expect(row.map((e) => e.id)).toEqual(['ex-doorway-row', 'ex-dumbbell-row']);
   });
 });

@@ -15,6 +15,7 @@ import { App } from './ui/App';
 import { initData } from './data/init';
 import { runStartupChecks } from './data/checks';
 import './data/engineChecks';
+import './data/foundation';
 import { purgeDeleted } from './data/purge';
 import { getMeta, setMeta } from './data/repos/meta';
 import { updateStore } from './ui/store';

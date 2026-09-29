@@ -4,6 +4,7 @@ import { DATA_TABLE_NAMES, SCHEMA_VERSION, getDb, type DataTableName } from '../
 import { clock } from '../clock';
 import { setMeta } from '../repos/meta';
 import { migrateBackup, type BackupData } from './migrate';
+import { assertNotDemo, isDemoMode } from '../demo/state';
 
 type Row = Record<string, unknown>;
 const UNDO_KEY = 'preImport';
@@ -37,7 +38,9 @@ export async function exportBackup(opts: { includePhotos: boolean }): Promise<{ 
     }
   }
   const stamp = clock.today();
-  return { bytes: zipSync(files, { level: 6 }), fileName: `fitness-backup-${stamp}.zip` };
+  // R-DEMO-4: קובץ של הדגמה מסומן בשם
+  const demo = (await isDemoMode()) ? '-demo' : '';
+  return { bytes: zipSync(files, { level: 6 }), fileName: `fitness-backup${demo}-${stamp}.zip` };
 }
 
 /** נרשם אחרי שהקובץ נשמר או שותף (לתזכורת הגיבוי, 3.4) */
@@ -98,6 +101,7 @@ async function writeTables(tables: Record<string, Row[]>, replacePhotos: boolean
  * ייבוא בלי תמונות לא מוחק תמונות קיימות.
  */
 export async function importBackup(preview: ImportPreview): Promise<void> {
+  await assertNotDemo('ייבוא');
   const db = getDb();
   const snapshot = await readAllTables(true);
   await db.undo.put({ key: UNDO_KEY, createdAt: clock.iso(), tables: snapshot, reason: 'import' } as never);
@@ -122,6 +126,7 @@ export async function hasUndoImport(): Promise<{ createdAt: string; reason: Undo
 
 /** מחיקת כל הנתונים (3.5). המצב הקודם נשמר, ואפשר לבטל */
 export async function deleteAllData(): Promise<void> {
+  await assertNotDemo('מחיקת כל הנתונים');
   const db = getDb();
   const snapshot = await readAllTables(true);
   await db.undo.put({ key: UNDO_KEY, createdAt: clock.iso(), tables: snapshot, reason: 'delete' } as never);
@@ -141,6 +146,7 @@ export async function countRecords(): Promise<Record<DataTableName, number>> {
 
 /** "בטל ייבוא": מחזיר בדיוק את המצב שלפני הייבוא */
 export async function undoImport(): Promise<void> {
+  await assertNotDemo('ביטול ייבוא');
   const db = getDb();
   const row = await db.undo.get(UNDO_KEY);
   if (!row) throw new Error('אין ייבוא לביטול');

@@ -4,7 +4,7 @@ import { FAMILY_META, type FamilyId } from '../../domain/families';
 import { getDb } from '../db';
 import { clock } from '../clock';
 import { alive, newBase, touched } from './base';
-import { buildSeedExercises } from '../seed/exercises';
+import { buildSeedExercises, type SeedExercise } from '../seed/exercises';
 
 export async function listExercises(): Promise<Exercise[]> {
   const rows = (await getDb().data('exercises').toArray()) as Exercise[];
@@ -19,11 +19,16 @@ export async function getExercise(id: string): Promise<Exercise | undefined> {
 /** טעינת המאגר ההתחלתי, רק תרגילים שעוד לא קיימים (לא נוגע בקיימים) */
 export async function seedExercises(): Promise<number> {
   const db = getDb();
+  const current = alive((await db.data('exercises').toArray()) as Exercise[]);
   const existing = new Set((await db.data('exercises').toCollection().primaryKeys()) as string[]);
   const now = clock.iso();
+  // תרגיל חדש מתחת לרמה שכבר נבדקה (🟢/🟡) מתחיל 🟢, כמו "כל הרמות הקלות 🟢" בפרק 6
+  const belowReady = (e: SeedExercise) =>
+    e.status !== null &&
+    e.families.some((f) => current.some((c) => (c.status === 'green' || c.status === 'yellow') && c.families.some((cf) => cf.family === f.family && cf.level > f.level)));
   const missing = buildSeedExercises()
     .filter((e) => !existing.has(e.id))
-    .map((e) => ({ ...e, createdAt: now, updatedAt: now, deletedAt: null }));
+    .map((e) => ({ ...e, status: belowReady(e) ? ('green' as const) : e.status, createdAt: now, updatedAt: now, deletedAt: null }));
   if (missing.length) await db.data('exercises').bulkAdd(missing);
   return missing.length;
 }
