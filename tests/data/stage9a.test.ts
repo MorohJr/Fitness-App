@@ -66,8 +66,56 @@ describe('תבניות ותרגילים חדשים (2.7)', () => {
 });
 
 describe('✅ בדיקת קבלה 9א: בדיקת רמה ← יסודות מהיום (2.8) ← אימון עד 60 דקות', () => {
-  it('בלי בדיקת רמה אי אפשר להתחיל', async () => {
-    await expect(startFoundation()).rejects.toThrow('בדיקת רמה');
+  it('R-BEG-2 (2.9): בלי בדיקת רמה, תרגילי ההתחלה עוברים ל-🟡 ואפשר להתאמן מיד', async () => {
+    const st = await getFoundationState();
+    expect(st.startList).toHaveLength(11);
+    const squat = st.startList.find((r) => r.family === 'squat')!;
+    expect(squat.exercises.map((e) => e.id).sort()).toEqual(['ex-chair-squat', 'ex-wall-sit']);
+    // בחוץ אין Towel Lat Pulldown? יש (בלי ציוד), אז רק רמה 0 במשיכה אנכית
+    expect(st.startList.find((r) => r.family === 'verticalPull')!.exercises.map((e) => e.name)).toEqual(['Towel Lat Pulldown']);
+
+    await startFoundation();
+    const exs = await listExercises();
+    const status = (id: string) => exs.find((e) => e.id === id)!.status;
+    expect(status('ex-chair-squat')).toBe('yellow');
+    expect(status('ex-wall-push-up')).toBe('yellow');
+    expect(status('ex-glute-bridge')).toBe('yellow'); // בלי רמה 0: הרמה הקלה ביותר
+    expect(status('ex-push-up')).toBe('red');
+    const planned = await planWorkout('2026-09-29', 'home');
+    expect(planned.dayType).toBe('activeRecovery'); // שלישי: הליכה
+    const wed = await planWorkout('2026-10-01', 'home'); // חמישי: יסודות א׳
+    expect(wed.strength.length).toBeGreaterThanOrEqual(4);
+    expect(wed.strength.filter((i) => i.role === 'work').every((i) => i.note?.includes('R-BEG-7'))).toBe(true);
+  });
+
+  it('משפחה שכבר נבדקה לא משתנה', async () => {
+    await applyStatusChanges({ 'ex-push-up': 'yellow' });
+    const row = (await getFoundationState()).startList.find((r) => r.family === 'horizontalPush')!;
+    expect(row.ready).toBe(true);
+    await startFoundation();
+    const exs = await listExercises();
+    expect(exs.find((e) => e.id === 'ex-wall-push-up')!.status).toBe('red');
+  });
+
+  it('✅ R-BEG-7: כיול, סט מעל הטווח באימון הראשון ← הצעה לעלות רמה מיד', async () => {
+    await startFoundation();
+    setNow('2026-10-01');
+    const planned = await planWorkout('2026-10-01', 'home');
+    const w = await startWorkout('2026-10-01', 'home', planned);
+    const wes = await listWorkoutExercises(w.id);
+    const wall = wes.find((x) => x.exerciseId === 'ex-wall-push-up')!;
+    for (const we of wes) {
+      const ex = planned.strength.find((s) => s.exercise.id === we.exerciseId)!.exercise;
+      const v = we.id === wall.id ? we.targetMax + 6 : we.targetMin;
+      for (let n = 1; n <= we.targetSets; n++)
+        for (const side of ex.unilateral ? (['right', 'left'] as const) : (['none'] as const))
+          await logSet(we.id, { setNumber: n, side, reps: ex.measure === 'time' ? null : v, seconds: ex.measure === 'time' ? v : null, load: null, rpe: 7 });
+    }
+    const created = await finishWorkout(w.id, { feeling: 7, notes: '' });
+    const adv = created.filter((s) => s.type === 'advance');
+    expect(adv).toHaveLength(1);
+    expect(adv[0].payload.exerciseId).toBe('ex-wall-push-up');
+    expect(adv[0].reason).toContain('R-BEG-7');
   });
 
   it('מקצה לקצה', async () => {

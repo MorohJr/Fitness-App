@@ -11,6 +11,7 @@ import { useLive } from '../../hooks';
 import { DAY_TYPE_LABELS, WEEKDAYS } from '../../labels';
 import { BackLink, ErrorList } from '../../components/Fields';
 import { showToast } from '../../store';
+import { navigate } from '../../router';
 
 const DAY_NAMES: Record<string, string> = {
   'tpl-found-upper': "יסודות א': פלג גוף עליון",
@@ -25,7 +26,7 @@ export function FoundationScreen() {
   const [confirm, setConfirm] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   if (!st) return null;
-  const { active, pending, switchPending, readyFamilies, remainingFamilies, startsOn } = st;
+  const { active, pending, switchPending, readyFamilies, remainingFamilies, startsOn, startList } = st;
   const startsToday = startsOn === today;
   const total = FOUNDATION_FAMILIES.length;
   const sunday = nextSunday(today);
@@ -103,22 +104,22 @@ export function FoundationScreen() {
       ) : (
         <>
           <div class="card">
-            <h2>1. בדיקת רמה</h2>
-            <p class="small">
-              סט אחד בכל אחת מ-{total} משפחות, מהרמה הכי קלה (רמה 0). האפליקציה אומרת אם לעלות רמה. אפשר לעשות את זה בכמה ימים.
+            <h2>מה תעשה</h2>
+            <p class="small" style={{ margin: '0 0 8px' }}>
+              בלי מבחן לפני. מתחילים מהתרגילים האלה, והאימונים הראשונים מכיילים: אם יהיה לך קל מדי, האפליקציה תציע לעלות רמה כבר אחרי אימון אחד (R-BEG-7).
             </p>
-            <div class="progress-line"><i style={{ width: `${(readyFamilies.length / total) * 100}%` }} /></div>
-            <p class="small muted">{readyFamilies.length} מתוך {total} נבדקו</p>
-            <a class={`btn block${readyFamilies.length < total ? ' primary' : ''}`} href="#/workout/test-foundation">{readyFamilies.length ? 'המשך בדיקת רמה' : 'התחל בדיקת רמה'}</a>
-          </div>
-          <div class="card">
-            <h2>2. התחלה</h2>
-            {readyFamilies.length > 0 && readyFamilies.length < total && (
-              <div class="alert warn">משפחות שלא נבדקו לא ייכנסו לאימון עד שתבדוק אותן.</div>
-            )}
-            <button class="btn primary block" disabled={!readyFamilies.length} onClick={() => run(startFoundation, startsToday ? 'תוכנית היסודות התחילה' : `תוכנית היסודות מתחילה ב-${formatDate(startsOn)}`)}>
-              {startsToday ? 'התחל היום' : `התחל ביום ראשון ${formatDate(startsOn)}`}
+            {startList.map((row) => (
+              <div class="rung" key={row.family}>
+                <span class="nm" style={{ minWidth: '6.5em' }}>{FAMILY_META[row.family].name}</span>
+                <span class="grow small en">{row.exercises.length ? row.exercises.map((e) => e.name).join(' / ') : 'אין תרגיל זמין'}</span>
+              </div>
+            ))}
+            <button class="btn primary block" style={{ marginTop: '12px' }} onClick={() => run(async () => { await startFoundation(); if (startsToday) navigate('/workout'); }, startsToday ? 'תוכנית היסודות התחילה. האימון הראשון מחכה במסך האימון' : `תוכנית היסודות מתחילה ב-${formatDate(startsOn)}`)}>
+              {startsToday ? 'מתחילים היום' : `התחל ביום ראשון ${formatDate(startsOn)}`}
             </button>
+            <p class="small muted" style={{ margin: '10px 0 0' }}>
+              כבר מתאמן ורוצה לדלג על הרמות הקלות? <a href="#/workout/test-foundation">בדיקת רמה במקום ({readyFamilies.length}/{total})</a>
+            </p>
           </div>
         </>
       )}

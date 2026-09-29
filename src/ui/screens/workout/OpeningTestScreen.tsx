@@ -6,7 +6,7 @@ import { listInjuries } from '../../../data/repos/injuries';
 import { getProfile } from '../../../data/repos/profile';
 import { saveTestFamily, type TestSetInput } from '../../../data/repos/workouts';
 import { FAMILY_META, STRENGTH_FAMILIES, type FamilyId } from '../../../domain/families';
-import { availableAt, ladder, levelIn } from '../../../domain/calc/exercises';
+import { availableAt, ladder, levelIn, videoUrl } from '../../../domain/calc/exercises';
 import { evaluateTest, familyReady, familyStatusChanges, testValue, type TestOutcome } from '../../../domain/rules/opening-test';
 import { isBlocked } from '../../../domain/rules/R-INJ';
 import { FOUNDATION_FAMILIES } from '../../../domain/rules/R-BEG';
@@ -268,6 +268,8 @@ function FamilyTest({ family, exercises, injuries, location, foundation, onClose
             {current.unilateral ? ' לכל צד' : ''}. סט אחד, מקסימום בטכניקה נקייה.
           </p>
           <ul class="cues small">{current.cues.map((c) => <li key={c}>{c}</li>)}</ul>
+          {current.safety && <p class="small muted" style={{ margin: '0 0 8px' }}>⚠ {current.safety}</p>}
+          <a class="btn block" href={videoUrl(current)} target="_blank" rel="noopener" style={{ marginBottom: '10px' }}>▶ איך עושים את זה (יוטיוב)</a>
           {current.unilateral ? (
             <div class="grid2">
               <NumberField label="ימין" value={right} onChange={setRight} suffix={MEASURE_UNIT[current.measure]} min={0} />

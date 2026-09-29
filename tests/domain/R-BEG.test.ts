@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { deloadProgramStart, foundationStartDate, FOUNDATION_FAMILIES, FOUNDATION_STRENGTH_LIMIT_SEC, FOUNDATION_TOTAL_LIMIT_SEC, foundationDue, foundationOn, foundationSets, pendingFoundation, remainingTestFamilies } from '../../src/domain/rules/R-BEG';
+import { calibrationSuggestion, deloadProgramStart, foundationStartChanges, foundationStartDate, FOUNDATION_FAMILIES, FOUNDATION_STRENGTH_LIMIT_SEC, FOUNDATION_TOTAL_LIMIT_SEC, foundationDue, foundationOn, foundationSets, pendingFoundation, remainingTestFamilies } from '../../src/domain/rules/R-BEG';
 import { buildWorkout, type BuildInput } from '../../src/domain/engine/buildWorkout';
 import { FOUNDATION_WEEK_DAYS } from '../../src/domain/rules/R-DAY';
 import { STRENGTH_FAMILIES } from '../../src/domain/families';
 import type { WeekPlanVersion } from '../../src/domain/types';
-import { everything, exercisesWith, home, outdoor, tpl } from './engine-helpers';
+import { everything, exercisesWith, home, outdoor, session, tpl } from './engine-helpers';
+import { buildSeedExercises } from '../../src/data/seed/exercises';
 
 const v = (effectiveFrom: string, program: WeekPlanVersion['program']): WeekPlanVersion =>
   ({ id: effectiveFrom, createdAt: '', updatedAt: '', deletedAt: null, effectiveFrom, days: FOUNDATION_WEEK_DAYS, program });
@@ -125,5 +126,40 @@ describe('R-BEG-4: יום הליכה ומוביליטי', () => {
   it('יום התאוששות רגיל לא השתנה', () => {
     const w = buildWorkout(input({ plan: { dayType: 'activeRecovery', templateId: 'tpl-recovery' }, template: tpl('tpl-recovery'), foundationWeek: null }));
     expect(w.blocks.map((b) => b.key)).toEqual(['mobility', 'stretch', 'posture', 'jaw', 'meditation']);
+  });
+});
+
+describe('R-BEG-2 (2.9): תרגילי התחלה בלי מבחן', () => {
+  const fresh = () => buildSeedExercises().map((e) => ({ ...e, createdAt: '', updatedAt: '', deletedAt: null }));
+  it('הרמה הקלה ביותר בסולם, ובכל מיקום הקלה שזמינה בו', () => {
+    const ch = foundationStartChanges(fresh(), [home, outdoor]);
+    expect(Object.keys(ch).sort()).toEqual([
+      'ex-bird-dog', 'ex-calf-raise', 'ex-chair-squat', 'ex-doorway-row', 'ex-glute-bridge', 'ex-incline-pike-push-up', 'ex-incline-plank',
+      'ex-knee-plank', 'ex-knee-side-plank', 'ex-supported-static-lunge', 'ex-towel-lat-pulldown', 'ex-wall-push-up', 'ex-wall-sit'
+    ]);
+  });
+  it('פציעה: תרגיל חסום לא נבחר', () => {
+    const inj = { id: 'i', createdAt: '', updatedAt: '', deletedAt: null, area: 'knee', pain: 5, status: 'active' as const, startDate: '2026-09-01', healedDate: null, notes: '', blockedExercises: ['ex-chair-squat'], blockedFamilies: [], blockedMuscles: [] };
+    const ch = foundationStartChanges(fresh(), [home], [inj]);
+    expect(ch['ex-chair-squat']).toBeUndefined();
+    expect(ch['ex-wall-sit']).toBe('yellow');
+  });
+});
+
+describe('R-BEG-7: כיול באימון הראשון', () => {
+  const exs = exercisesWith(0);
+  const wall = exs.find((e) => e.id === 'ex-wall-push-up')!;
+  const next = [{ ex: exs.find((e) => e.id === 'ex-incline-push-up')!, availableSomewhere: true }];
+  const s = (vals: number[], rpe = 7, date = '2026-10-01') => session(wall.id, date, vals, { rpe, targetMin: wall.targetMin, targetMax: wall.targetMax });
+  it('סט מעל הטווח עם RPE עד 8 ← מעבר מיידי', () => {
+    const r = calibrationSuggestion(wall, 'horizontalPush', [s([wall.targetMin, wall.targetMax + 3])], next);
+    expect(r?.type).toBe('advance');
+    expect(r?.payload.nextId).toBe('ex-incline-push-up');
+  });
+  it('בטווח, או RPE 9, או לא האימון הראשון: אין', () => {
+    expect(calibrationSuggestion(wall, 'horizontalPush', [s([wall.targetMax, wall.targetMax])], next)).toBeNull();
+    expect(calibrationSuggestion(wall, 'horizontalPush', [s([wall.targetMax + 3], 9)], next)).toBeNull();
+    expect(calibrationSuggestion(wall, 'horizontalPush', [s([10]), s([wall.targetMax + 3], 7, '2026-10-03')], next)).toBeNull();
+    expect(calibrationSuggestion(wall, 'horizontalPush', [s([wall.targetMax + 3])], [])).toBeNull();
   });
 });

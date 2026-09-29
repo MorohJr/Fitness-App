@@ -203,6 +203,8 @@ export function buildWorkout(inp: BuildInput): PlannedWorkout {
     }
     const t = targetToday(chosen, lastSession(inp.history, chosen.id), sets);
     if (chosen.restartAtMin) notes.push('מתחילים מהקצה התחתון');
+    // R-BEG-7: פעם ראשונה עם התרגיל ביסודות, האימון עצמו מכייל
+    if (foundation && !lastSession(inp.history, chosen.id)) notes.push('פעם ראשונה: רשום כמה יצא בפועל, גם אם יותר מהיעד (R-BEG-7)');
     if (chosen.currentLoad) notes.push(`עומס: ${chosen.currentLoad}`);
     if (substituteFor) notes.push(`במקום ${substituteFor}`);
     items.push({

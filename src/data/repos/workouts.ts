@@ -90,6 +90,7 @@ import type { DayTemplate, Injury, ISODate as D, Profile, Side, Suggestion } fro
 import type { PastExercise, PastSet } from '../../domain/engine/history';
 import { buildWorkout, type PlannedWorkout } from '../../domain/engine/buildWorkout';
 import { progressionSuggestions } from '../../domain/rules/R-PRG';
+import { calibrationSuggestion } from '../../domain/rules/R-BEG';
 import { availableAt, ladder } from '../../domain/calc/exercises';
 import { isBlocked } from '../../domain/rules/R-INJ';
 import { recoveryScore } from '../../domain/rules/R-REC';
@@ -278,7 +279,7 @@ export async function finishWorkout(workoutId: string, fin: { feeling: number | 
 export async function evaluateProgression(workoutId: string): Promise<Suggestion[]> {
   const w = await getWorkout(workoutId);
   if (!w || w.isDeload || w.kind !== 'regular') return [];
-  const [wes, exs, history, profile] = await Promise.all([listWorkoutExercises(workoutId), listExercises(), getHistory(), getProfile()]);
+  const [wes, exs, history, profile, foundation] = await Promise.all([listWorkoutExercises(workoutId), listExercises(), getHistory(), getProfile(), getFoundationInfo(w.date)]);
   const byId = new Map(exs.map((e) => [e.id, e]));
   const locations = (profile?.locations ?? []).filter((l) => l.enabled);
   const created: Suggestion[] = [];
@@ -289,7 +290,13 @@ export async function evaluateProgression(workoutId: string): Promise<Suggestion
     const lvl = ex.families.find((f) => f.family === we.family)?.level ?? we.level;
     const next = lad.filter((e) => e.families.some((f) => f.family === we.family && f.level === lvl + 1)).map((e) => ({ ex: e, availableSomewhere: locations.some((l) => availableAt(e, l)) }));
     const previous = lad.find((e) => e.families.some((f) => f.family === we.family && f.level === lvl - 1)) ?? null;
-    const sugg = progressionSuggestions(ex, we.family, history.filter((h) => h.exerciseId === ex.id), { next, previous });
+    const mine = history.filter((h) => h.exerciseId === ex.id);
+    const sugg = progressionSuggestions(ex, we.family, mine, { next, previous });
+    // R-BEG-7: כיול באימון הראשון ביסודות
+    if (foundation && !sugg.some((s) => s.type === 'advance' || s.type === 'regress')) {
+      const cal = calibrationSuggestion(ex, we.family, mine, next);
+      if (cal) sugg.push(cal);
+    }
     for (const s of sugg) {
       const c = await createSuggestion({ type: s.type, refId: ex.id, payload: s.payload, title: s.title, reason: s.reason });
       if (c) created.push(c);

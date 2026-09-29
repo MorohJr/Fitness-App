@@ -1,5 +1,10 @@
 // R-BEG: תוכנית יסודות למתחילים מאפס. לוגיקה בלבד
-import type { ISODate, WeekPlanVersion } from '../types';
+import type { Exercise, Injury, ISODate, LocationSetup, WeekPlanVersion } from '../types';
+import type { PastExercise } from '../engine/history';
+import { setValues } from '../engine/history';
+import { availableAt, ladder, levelIn } from '../calc/exercises';
+import { isBlocked } from './R-INJ';
+import type { ProgressionSuggestion } from './R-PRG';
 import type { FamilyId } from '../families';
 import { addDays, daysBetween, startOfWeek } from '../calc/dates';
 import { versionForDate } from './R-VER';
@@ -81,4 +86,58 @@ export function foundationEnd(start: ISODate): ISODate {
 /** R-BEG-2: תוכנית יסודות ראשונה מתחילה מהיום. אם כבר הייתה, מיום ראשון הבא (R-VER-2) */
 export function foundationStartDate(versions: WeekPlanVersion[], today: ISODate): ISODate | null {
   return versions.some((v) => !v.deletedAt && v.program === 'foundation') ? null : today;
+}
+
+/**
+ * R-BEG-2: תרגילי ההתחלה בכל משפחת יסודות: הרמה הקלה ביותר בסולם,
+ * וגם הרמה הקלה ביותר שזמינה בכל מיקום פעיל. משפחה שכבר מוכנה (🟢/🟡) לא משתנה
+ */
+export function foundationStartExercises(exercises: Exercise[], locations: LocationSetup[], injuries: Injury[] = []): { family: FamilyId; exercises: Exercise[]; ready: boolean }[] {
+  return FOUNDATION_FAMILIES.map((family) => {
+    const lad = ladder(exercises, family).filter((e) => !isBlocked(e, injuries));
+    const ready = lad.filter((e) => e.status === 'green' || e.status === 'yellow');
+    if (ready.length) return { family, exercises: [ready[ready.length - 1]], ready: true };
+    if (!lad.length) return { family, exercises: [], ready: false };
+    const lowest = (list: Exercise[]) => {
+      const lvl = Math.min(...list.map((e) => levelIn(e, family) ?? 0));
+      return list.filter((e) => levelIn(e, family) === lvl);
+    };
+    const picks = new Map(lowest(lad).map((e) => [e.id, e]));
+    for (const loc of locations.filter((l) => l.enabled)) {
+      const here = lad.filter((e) => availableAt(e, loc));
+      if (here.length) for (const e of lowest(here)) picks.set(e.id, e);
+    }
+    return { family, exercises: [...picks.values()], ready: false };
+  });
+}
+
+/** R-BEG-2: שינויי הסטטוס באישור "מתחילים היום" */
+export function foundationStartChanges(exercises: Exercise[], locations: LocationSetup[], injuries: Injury[] = []): Record<string, 'yellow'> {
+  const out: Record<string, 'yellow'> = {};
+  for (const row of foundationStartExercises(exercises, locations, injuries)) {
+    if (row.ready) continue;
+    for (const e of row.exercises) if (e.status === 'red') out[e.id] = 'yellow';
+  }
+  return out;
+}
+
+/**
+ * R-BEG-7: כיול באימון הראשון. סט עבודה מעל הקצה העליון עם RPE עד 8 ← מעבר מיידי לרמה הבאה.
+ * sessionsAll = כל האימונים עם התרגיל. רק כשיש בדיוק אימון רגיל אחד
+ */
+export function calibrationSuggestion(ex: Exercise, family: string, sessionsAll: PastExercise[], next: { ex: Exercise; availableSomewhere: boolean }[]): ProgressionSuggestion | null {
+  const sessions = sessionsAll.filter((s) => s.kind === 'regular' && !s.isDeload && s.role === 'work');
+  if (sessions.length !== 1 || ex.status === null) return null;
+  const vals = setValues(sessions[0].sets, ex.measure, ex.unilateral);
+  const over = vals.filter((v) => v.value > ex.targetMax && (v.rpe ?? 8) <= 8);
+  if (!over.length) return null;
+  const nx = next.find((x) => x.availableSomewhere)?.ex;
+  if (!nx) return null;
+  const best = Math.max(...over.map((v) => v.value));
+  return {
+    type: 'advance',
+    title: `לעבור ל-${nx.name}`,
+    reason: `באימון הראשון ב-${ex.name} בוצעו ${best}${ex.measure === 'time' ? ' שניות' : ''}, מעל הקצה העליון (${ex.targetMax}). כנראה קל מדי, אז עולים רמה כבר עכשיו (R-BEG-7)`,
+    payload: { exerciseId: ex.id, nextId: nx.id, family }
+  };
 }

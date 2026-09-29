@@ -1,7 +1,11 @@
 // תוכנית יסודות (R-BEG): התחלה, מעבר לתוכנית הרגילה, והצעת הסיום
 import type { ISODate, Suggestion, WeekPlanVersion } from '../domain/types';
 import { DEFAULT_WEEK_DAYS, FOUNDATION_WEEK_DAYS } from '../domain/rules/R-DAY';
-import { FOUNDATION_FAMILIES, FOUNDATION_WEEKS, foundationDue, foundationOn, foundationStartDate, pendingFoundation, remainingTestFamilies, type FoundationInfo } from '../domain/rules/R-BEG';
+import { FOUNDATION_FAMILIES, FOUNDATION_WEEKS, foundationDue, foundationOn, foundationStartChanges, foundationStartDate, foundationStartExercises, pendingFoundation, remainingTestFamilies, type FoundationInfo } from '../domain/rules/R-BEG';
+import { applyStatusChanges } from './repos/exercises';
+import { getProfile } from './repos/profile';
+import { listInjuries } from './repos/injuries';
+import type { Exercise } from '../domain/types';
 import { familyReady } from '../domain/rules/opening-test';
 import { STRENGTH_FAMILIES, FAMILY_META, type FamilyId } from '../domain/families';
 import { formatDate, nextSunday, startOfWeek } from '../domain/calc/dates';
@@ -27,10 +31,12 @@ export interface FoundationState {
   remainingFamilies: FamilyId[];
   /** מתי תתחיל אם מתחילים עכשיו (R-BEG-2) */
   startsOn: ISODate;
+  /** תרגילי ההתחלה בכל משפחה (R-BEG-2) */
+  startList: { family: FamilyId; exercises: Exercise[]; ready: boolean }[];
 }
 
 export async function getFoundationState(today: ISODate = clock.today()): Promise<FoundationState> {
-  const [versions, exs] = await Promise.all([listWeekPlanVersions(), listExercises()]);
+  const [versions, exs, profile, injuries] = await Promise.all([listWeekPlanVersions(), listExercises(), getProfile(), listInjuries()]);
   const active = foundationOn(versions, today);
   const cur = versionForDate(versions, today);
   const switchPending = versions.find((v) => v.effectiveFrom > today && v.program !== 'foundation' && (active || cur?.program === 'foundation')) ?? null;
@@ -40,14 +46,16 @@ export async function getFoundationState(today: ISODate = clock.today()): Promis
     switchPending,
     readyFamilies: FOUNDATION_FAMILIES.filter((f) => familyReady(exs, f)),
     remainingFamilies: remainingTestFamilies(STRENGTH_FAMILIES).filter((f) => !familyReady(exs, f)),
-    startsOn: foundationStartDate(versions, today) ?? nextSunday(today)
+    startsOn: foundationStartDate(versions, today) ?? nextSunday(today),
+    startList: foundationStartExercises(exs, profile?.locations ?? [], injuries)
   };
 }
 
 /** R-BEG-2: גרסת תוכנית של יסודות. הראשונה מהיום, אחרת מיום ראשון הבא (R-VER-2). באישור, מהמסך */
 export async function startFoundation(): Promise<WeekPlanVersion> {
-  const exs = await listExercises();
-  if (!FOUNDATION_FAMILIES.some((f) => familyReady(exs, f))) throw new Error('קודם בדיקת רמה: לפחות משפחה אחת');
+  // בלי מבחן לפני: תרגילי ההתחלה עוברים ל-🟡 באישור הזה (E2)
+  const [exs, profile, injuries] = await Promise.all([listExercises(), getProfile(), listInjuries()]);
+  await applyStatusChanges(foundationStartChanges(exs, profile?.locations ?? [], injuries));
   const from = foundationStartDate(await listWeekPlanVersions(), clock.today()) ?? undefined;
   return saveWeekPlan(FOUNDATION_WEEK_DAYS, 'foundation', from);
 }
