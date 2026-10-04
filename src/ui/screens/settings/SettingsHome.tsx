@@ -16,7 +16,6 @@ const ITEMS: { to: string; icon: IconName; label: string }[] = [
   { to: '/settings/week', icon: 'calendar', label: 'תוכנית שבועית ותבניות' },
   { to: '/workout/test', icon: 'workout', label: 'מבחן פתיחה' },
   { to: '/workout/foundation', icon: 'target', label: 'תוכנית יסודות למתחילים' },
-  { to: '/settings/health', icon: 'today', label: 'קיצור הדרך של Apple Health' },
   { to: '/settings/backup', icon: 'backup', label: 'גיבוי ושחזור' }
 ];
 

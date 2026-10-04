@@ -1,15 +1,14 @@
-// מסך "היום" (פרק 7): Health, מדדים, התאוששות, תוספים, שתייה ואוכל
-import { useEffect, useState } from 'preact/hooks';
+// מסך "היום" (פרק 7): מדדים (הזנה ידנית), התאוששות, תוספים, שתייה ואוכל
+import { useEffect } from 'preact/hooks';
 import type { DayLog, ISODate, Supplement, SupplementTiming } from '../../../domain/types';
 import { clock } from '../../../data/clock';
 import { addWater, ensureDayLog, getDayLog, updateDayLog, type DayLogPatch } from '../../../data/repos/dayLogs';
 import { listSupplementLogs, listSupplements, setSupplementTaken } from '../../../data/repos/supplements';
 import { addDays, dayOfWeek, formatDate } from '../../../domain/calc/dates';
-import { parseHealthClipboard } from '../../../domain/calc/health';
 import { recoveryScore } from '../../../domain/rules/R-REC';
 import { useLive } from '../../hooks';
 import { DAY_TYPE_LABELS, WEEKDAYS, fmtNum } from '../../labels';
-import { ErrorList, Field, NumberField, ScaleField } from '../../components/Fields';
+import { NumberField, ScaleField } from '../../components/Fields';
 import { showToast } from '../../store';
 import { TodayFood } from './TodayFood';
 
@@ -22,8 +21,6 @@ export function TodayScreen({ date: dateParam }: { date?: string }) {
     const [log, supplements, supLogs] = await Promise.all([getDayLog(date), listSupplements(), listSupplementLogs(date)]);
     return { log, supplements: supplements.filter((s) => s.active), supLogs };
   }, [date]);
-  const [pasteText, setPasteText] = useState<string | null>(null);
-  const [errors, setErrors] = useState<string[]>([]);
   useEffect(() => {
     // יום בלי רשומה: יוצרים (יעדים לפי מה שהיה בתוקף, R-VER-1)
     if (data && !data.log) ensureDayLog(date);
@@ -34,31 +31,6 @@ export function TodayScreen({ date: dateParam }: { date?: string }) {
   const rec = recoveryScore(log);
   const waterTarget = (log.targets.waterL ?? 0) * 1000;
   const water = log.waterMl ?? 0;
-
-  async function applyHealth(text: string) {
-    const r = parseHealthClipboard(text, today);
-    if (!r.ok) {
-      setErrors([r.error]);
-      return;
-    }
-    setErrors([]);
-    setPasteText(null);
-    const patch: DayLogPatch = {};
-    if (r.steps !== null) patch.steps = r.steps;
-    if (r.sleep !== null) patch.sleepHours = r.sleep;
-    await set(patch);
-    showToast(`עודכן: ${r.steps !== null ? `${fmtNum(r.steps)} צעדים` : ''}${r.steps !== null && r.sleep !== null ? ', ' : ''}${r.sleep !== null ? `${r.sleep} שעות שינה` : ''}`);
-  }
-
-  async function pasteFromHealth() {
-    try {
-      const text = await navigator.clipboard.readText();
-      await applyHealth(text);
-    } catch {
-      // בלי הרשאה ללוח: מדביקים ידנית
-      setPasteText('');
-    }
-  }
 
   async function water$(ml: number) {
     const prev = await addWater(date, ml);
@@ -81,22 +53,6 @@ export function TodayScreen({ date: dateParam }: { date?: string }) {
       <div class="chips" style={{ justifyContent: 'center' }}>
         <span class="badge accent">{DAY_TYPE_LABELS[log.dayType]}</span>
       </div>
-
-      {date === today && (
-        <div class="card">
-          <button class="btn primary block" onClick={pasteFromHealth}>הדבק מ-Health</button>
-          {pasteText !== null && (
-            <div style={{ marginTop: '10px' }}>
-              <Field label="לא הייתה גישה ללוח. הדבק כאן את הטקסט מקיצור הדרך:">
-                <textarea class="input en" value={pasteText} onInput={(e) => setPasteText((e.currentTarget as HTMLTextAreaElement).value)} />
-              </Field>
-              <button class="btn block" onClick={() => applyHealth(pasteText)}>שמור</button>
-            </div>
-          )}
-          <ErrorList errors={errors} />
-          <p class="small muted" style={{ margin: '8px 0 0' }}>צריך קודם להריץ את קיצור הדרך באייפון. <a href="#/settings/health">איך בונים אותו</a></p>
-        </div>
-      )}
 
       <div class="card">
         <h2>התאוששות</h2>

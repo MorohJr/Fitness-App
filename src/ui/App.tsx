@@ -36,7 +36,6 @@ import { PantryItemScreen } from './screens/nutrition/PantryItemScreen';
 import { MealsScreen } from './screens/nutrition/MealsScreen';
 import { MealScreen } from './screens/nutrition/MealScreen';
 import { ShoppingScreen } from './screens/nutrition/ShoppingScreen';
-import { HealthShortcutScreen } from './screens/settings/HealthShortcutScreen';
 import { RunWorkout } from './screens/workout/RunWorkout';
 import { WorkoutSummary } from './screens/workout/WorkoutSummary';
 import { TemplateScreen } from './screens/settings/TemplateScreen';
@@ -74,7 +73,6 @@ function screenFor(path: string) {
     case '/dashboard': return <DashboardScreen />;
     case '/today': return <TodayScreen />;
     case '/nutrition/supplements': return <SupplementsScreen />;
-    case '/settings/health': return <HealthShortcutScreen />;
     case '/workout': return <WorkoutHome />;
     case '/workout/library': return <LibraryScreen />;
     case '/workout/new-exercise': return <NewExerciseScreen />;
