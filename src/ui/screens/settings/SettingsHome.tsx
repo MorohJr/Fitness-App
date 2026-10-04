@@ -1,9 +1,7 @@
 // מסך ההגדרות הראשי (פרק 7)
 import { getProfile, updateProfile } from '../../../data/repos/profile';
-import type { ThemeMode } from '../../../domain/types';
 import { useLive } from '../../hooks';
-import { THEME_LABELS } from '../../labels';
-import { NumberField, Segmented } from '../../components/Fields';
+import { NumberField } from '../../components/Fields';
 import { Icon, type IconName } from '../../components/Icon';
 import { version } from '../../../../package.json';
 import { SCHEMA_VERSION } from '../../../data/db';
@@ -32,16 +30,6 @@ export function SettingsHome() {
           </a>
         ))}
       </div>
-      {profile && (
-        <>
-          <h2>תצוגה</h2>
-          <Segmented<ThemeMode>
-            value={profile.settings.themeMode}
-            options={(Object.keys(THEME_LABELS) as ThemeMode[]).map((v) => ({ value: v, label: THEME_LABELS[v] }))}
-            onChange={(themeMode) => updateProfile({ settings: { ...profile.settings, themeMode } })}
-          />
-        </>
-      )}
       {profile && (
         <>
           <h2>אימון ותמונות</h2>

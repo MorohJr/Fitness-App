@@ -10,7 +10,7 @@ export async function renderDemoPhoto(spec: DemoPhotoSpec): Promise<Blob | null>
     const div = document.createElement('div');
     render(h(Avatar, { body: spec.body, strength: spec.strength, size: 300 }), div);
     // בתמונה אין משתני CSS: צבע ההדגשה וצבע הצל ישירות
-    const svg = div.innerHTML.replaceAll('var(--accent)', '#d7ff3a').replaceAll('currentColor', '#000').replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+    const svg = div.innerHTML.replaceAll('var(--accent)', '#ff6a1a').replaceAll('currentColor', '#000').replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
     const img = new Image();
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
     await img.decode();

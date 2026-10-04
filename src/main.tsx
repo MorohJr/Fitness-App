@@ -10,6 +10,10 @@ import '@fontsource/rubik/latin-400.css';
 import '@fontsource/rubik/latin-500.css';
 import '@fontsource/rubik/latin-700.css';
 import '@fontsource/rubik/latin-800.css';
+// כותרות ומספרים גדולים (3.7, 2.11)
+import '@fontsource/karantina/hebrew-700.css';
+import '@fontsource/karantina/latin-700.css';
+import '@fontsource/barlow-condensed/latin-700.css';
 import './ui/theme/theme.css';
 import { App } from './ui/App';
 import { initData } from './data/init';

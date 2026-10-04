@@ -1,58 +1,27 @@
-/* שפה עיצובית "ספורט נועז" (SPEC 3.7). מצב כהה/בהיר לפי המכשיר, אפשר לקבע */
+/* שפה עיצובית "קרבון וכתום" (SPEC 3.7, 2.11). מצב כהה בלבד */
 :root {
-  /* בהיר */
-  --bg: #f3f3f0;
-  --surface: #ffffff;
-  --surface-2: #ecece8;
-  --border: #dcdcd6;
-  --card-border: #e2e2dc;
-  --text: #0a0a0a;
-  --muted: #6a6a66;
-  --accent: #d7ff3a;       /* מילוי: כפתורים, בחירה */
-  --on-accent: #0a0a0a;    /* טקסט על מילוי ההדגשה */
-  --accent-ink: #4d6b00;   /* טקסט/קישור בצבע הדגשה */
-  --track: #dcdcd6;        /* רקע פס התקדמות */
-  --warn: #9a5b00;
-  --warn-soft: #fff1d6;
-  --danger: #c0271c;
-  --danger-soft: #fde6e3;
-  --radius: 10px;
-  --nav-h: 64px;
-  --font: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --bg: #0a0a0a;
-    --surface: #151515;
-    --surface-2: #1e1e1e;
-    --border: #2c2c2c;
-    --card-border: transparent;
-    --text: #f4f4f4;
-    --muted: #8a8a8a;
-    --accent-ink: #d7ff3a;
-    --track: #262626;
-    --warn: #ffb020;
-    --warn-soft: #2a2110;
-    --danger: #ff6b5f;
-    --danger-soft: #2a1311;
-    color-scheme: dark;
-  }
-}
-:root[data-theme='dark'] {
-  --bg: #0a0a0a;
-  --surface: #151515;
-  --surface-2: #1e1e1e;
-  --border: #2c2c2c;
+  --bg: #16171a;
+  --surface: #1f2024;
+  --surface-2: #26282d;
+  --border: #33353b;
   --card-border: transparent;
-  --text: #f4f4f4;
-  --muted: #8a8a8a;
-  --accent-ink: #d7ff3a;
-  --track: #262626;
+  --text: #ececec;
+  --muted: #8d9099;
+  --accent: #ff6a1a;       /* מילוי: כפתורים, בחירה */
+  --on-accent: #16171a;    /* טקסט על מילוי ההדגשה */
+  --accent-ink: #ff8a4a;   /* טקסט/קישור בצבע הדגשה, קריא על גרפיט */
+  --track: #2e3036;        /* רקע פס התקדמות */
   --warn: #ffb020;
   --warn-soft: #2a2110;
   --danger: #ff6b5f;
   --danger-soft: #2a1311;
+  --radius: 6px;
+  --nav-h: 64px;
+  --font: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  /* כותרות ומספרים גדולים: צר וגבוה */
+  --font-display: 'Karantina', 'Rubik', sans-serif;
+  /* מספרים גדולים: צר, עם ספרות ברורות */
+  --font-num: 'Barlow Condensed', 'Karantina', 'Rubik', sans-serif;
   color-scheme: dark;
 }
 
@@ -94,8 +63,8 @@ a { color: var(--accent-ink); }
 }
 
 /* טיפוגרפיה */
-.eyebrow { font-size: 0.78rem; font-weight: 500; letter-spacing: .4px; color: var(--muted); margin-bottom: 4px; }
-h1 { font-size: 2.1rem; font-weight: 800; line-height: 1.05; letter-spacing: -0.5px; margin: 2px 0 14px; }
+.eyebrow { font-size: 0.78rem; font-weight: 800; letter-spacing: .12em; color: var(--accent); margin-bottom: 4px; }
+h1 { font-family: var(--font-display); font-size: 3.1rem; font-weight: 700; line-height: .9; letter-spacing: 0; margin: 2px 0 14px; }
 h1 em { font-style: normal; color: var(--accent-ink); }
 h2 { font-size: 0.8rem; font-weight: 700; letter-spacing: .5px; color: var(--muted); margin: 22px 0 10px; }
 .card h2 { margin-top: 0; }
@@ -138,7 +107,7 @@ p { margin: 0 0 10px; }
 }
 
 /* כרטיסים ורשימות */
-.card { background: var(--surface); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 16px; margin-bottom: 10px; }
+.card { background: var(--surface); border: 1px solid var(--card-border); border-top: 3px solid var(--accent); border-radius: var(--radius); padding: 16px; margin-bottom: 10px; }
 .list { background: var(--surface); border: 1px solid var(--card-border); border-radius: var(--radius); overflow: hidden; margin-bottom: 14px; }
 .list > a, .list > .item {
   display: flex; align-items: center; gap: 12px;
@@ -153,7 +122,7 @@ p { margin: 0 0 10px; }
 
 /* מספרים גדולים ופסים */
 .big { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-.big .v { font-size: 3.4rem; font-weight: 800; line-height: .95; letter-spacing: -2px; }
+.big .v { font-family: var(--font-num); font-size: 4.2rem; font-weight: 700; line-height: .85; letter-spacing: 0; }
 .big .of { color: var(--muted); font-weight: 600; }
 .label { font-size: 0.75rem; font-weight: 600; letter-spacing: .4px; color: var(--muted); }
 .segbar { display: grid; grid-template-columns: repeat(20, 1fr); gap: 3px; margin: 12px 0 4px; }
@@ -163,7 +132,7 @@ p { margin: 0 0 10px; }
 .stats.two { grid-template-columns: repeat(2, 1fr); }
 .stat { background: var(--surface); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 12px; }
 .card .stat { background: var(--surface-2); border: 0; }
-.stat .v { font-size: 1.45rem; font-weight: 800; line-height: 1.15; }
+.stat .v { font-family: var(--font-num); font-size: 1.9rem; font-weight: 700; line-height: 1; }
 .stat .l { font-size: 0.75rem; font-weight: 600; color: var(--muted); }
 .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
 .badge { display: inline-block; padding: 5px 10px; border-radius: 6px; background: var(--surface-2); font-size: 0.78rem; font-weight: 700; color: var(--muted); }
@@ -199,7 +168,7 @@ input.input[type='number'], input.input[type='date'] { direction: ltr; text-alig
   min-height: 48px; padding: 0 18px; border-radius: 10px; cursor: pointer;
   border: 1.5px solid var(--border); background: transparent; font-weight: 700; text-decoration: none; color: var(--text);
 }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); min-height: 56px; font-size: 1.05rem; font-weight: 800; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); min-height: 56px; font-size: 1.05rem; font-weight: 800; letter-spacing: .03em; }
 .btn.danger { color: var(--danger); }
 .btn.block { width: 100%; }
 .btn:disabled { opacity: .45; cursor: default; }
@@ -270,7 +239,7 @@ input[type='range'] { width: 100%; accent-color: var(--accent); min-height: 44px
 .chips-sel { display: flex; flex-wrap: wrap; gap: 6px; }
 .chips-sel button { min-height: 36px; padding: 0 12px; border-radius: 8px; border: 0; background: var(--surface-2); color: var(--muted); font-weight: 600; cursor: pointer; }
 .chips-sel button[aria-pressed='true'] { background: var(--accent); color: var(--on-accent); }
-.progress-line { height: 8px; border-radius: 8px; background: var(--track); overflow: hidden; margin: 8px 0 4px; }
+.progress-line { height: 8px; border-radius: 1px; background: var(--track); overflow: hidden; margin: 8px 0 4px; transform: skewX(-18deg); }
 .progress-line i { display: block; height: 100%; background: var(--accent); }
 
 /* ===== שלב 3 ===== */
@@ -358,8 +327,8 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
 /* דמות ודרגה (R-RANK) */
 .rank-card { display: flex; gap: 14px; align-items: center; color: var(--text); }
 .rank-card .grow { min-width: 0; }
-.rank-pips { display: flex; gap: 4px; }
-.rank-pips i { flex: 1; height: 8px; border-radius: 2px; background: var(--track); }
+.rank-pips { display: flex; gap: 4px; transform: skewX(-18deg); }
+.rank-pips i { flex: 1; height: 8px; border-radius: 1px; background: var(--track); }
 .rank-pips i.on { background: var(--accent); }
 .rank-next { margin: 6px 0 0; padding-inline-start: 18px; }
 .avatar-strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; direction: rtl; }
