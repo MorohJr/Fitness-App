@@ -3,5 +3,5 @@ import type { ThemeMode } from '../../domain/types';
 
 export function applyTheme(_mode?: ThemeMode): void {
   delete document.documentElement.dataset.theme;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#16171a');
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#0a0a0a');
 }

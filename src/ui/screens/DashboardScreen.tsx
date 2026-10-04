@@ -103,68 +103,13 @@ export function DashboardScreen() {
         {st > 0 && <span class="badge">🔥 {st}</span>}
       </div>
 
-      {(!profileDone || !hasTargets || !exported || !testDone) && (
-        <>
-          <h2>להתחיל</h2>
-          <div class="list">
-            <a href="#/settings/profile"><span class="grow">פרופיל: מין, תאריך לידה, גובה</span>{profileDone && <span class="done">✓</span>}</a>
-            <a href="#/settings/targets"><span class="grow">יעדים בעזרת המחשבון</span>{hasTargets && <span class="done">✓</span>}</a>
-            {testReady === 0 ? (
-              <a href="#/workout"><span class="grow">בדיקה ראשונה: תוכנית יסודות או מבחן פתיחה</span></a>
-            ) : (
-              <a href="#/workout/test"><span class="grow">מבחן פתיחה ({testReady}/{STRENGTH_FAMILIES.length})</span>{testDone && <span class="done">✓</span>}</a>
-            )}
-            <a href="#/settings/backup"><span class="grow">גיבוי ראשון</span>{exported && <span class="done">✓</span>}</a>
-          </div>
-        </>
-      )}
-
-      <div class="actions" style={{ marginBottom: '12px' }}>
-        <a class="btn" href="#/today">רשום את היום</a>
-        <a class="btn" href="#/workout">{active ? 'המשך אימון' : 'התחל אימון'}</a>
-        <a class="btn" href="#/nutrition">רשום ארוחה</a>
-        <button class="btn" onClick={async () => { const prev = await addWater(today, 250); showToast('+250 מ"ל', () => updateDayLog(today, { waterMl: prev }).then(() => undefined)); }}>+ מים</button>
-      </div>
-
       <RankCard rank={rank} />
-
-      <SuggestionsList />
-
-      {summary && (
-        <div class="card sugg">
-          <h2>סיכום שבועי · {formatDate(summary.weekStart)}</h2>
-          <div class="stats two" style={{ marginBottom: '10px' }}>
-            {tile('אימונים', String(summary.workoutsDone))}
-            {tile('משקל מגמה', summary.trendChange === null ? '—' : fmtDelta(summary.trendChange), 'ק"ג בשבוע')}
-            {tile('עמידה ביעדים', summaryChecks?.pct === null || !summaryChecks ? '—' : `${summaryChecks.pct}%`)}
-            {tile('שיאים חדשים', String(summary.newPRs.length))}
-          </div>
-          {summary.volume.map((v) => (
-            <div class="row small" key={v.muscle}>
-              <span>{MUSCLES[v.muscle as MuscleId].name}</span>
-              <span class="num">{fmtNum(v.sets, 1)} {summary.foundation ? '' : v.sets < VOLUME_MIN ? '↓ מתחת ליעד' : v.sets > VOLUME_MAX ? '↑ מעל היעד' : '✓'}</span>
-            </div>
-          ))}
-          {summary.foundation && <p class="small muted" style={{ margin: '6px 0 0' }}>תוכנית יסודות: הנפח נמוך בכוונה, בלי השוואה ליעד 10–16 (R-BEG-5)</p>}
-          {summary.newPRs.length > 0 && <p class="small" style={{ marginTop: '8px' }}>🏅 {summary.newPRs.map((p) => `${p.name} ${p.value}`).join(' · ')}</p>}
-        </div>
-      )}
 
       <div class="stats" style={{ marginBottom: '10px' }}>
         {tile('עמידה 7 ימים', a7.pct === null ? '—' : `${a7.pct}%`, `30 ימים: ${a30.pct === null ? '—' : `${a30.pct}%`}`)}
         {tile('התאוששות', rec?.score == null ? '—' : fmtNum(rec.score, 1), rec?.manual ? 'ידני' : 'מתוך 10')}
         {tile('רצף', `🔥 ${st}`, 'ימים')}
       </div>
-
-      {phase && (
-        <div class="card">
-          <div class="row">
-            <h2 style={{ margin: 0 }}>שלב נוכחי: {PHASE_LABELS[phase.type]}</h2>
-            <span class="small muted">מ-{formatDate(phase.startDate)}</span>
-          </div>
-          <p class="small" style={{ margin: '6px 0 0' }}>{fmtNum(phaseCaloriesOn(phase, today))} קק"ל · יעד {fmtDelta(phase.weeklyRateKg)} ק"ג לשבוע</p>
-        </div>
-      )}
 
       <div class="card">
         <div class="row">
@@ -201,6 +146,61 @@ export function DashboardScreen() {
             {tile('צעדים', fmtNum(log?.steps ?? null), `מתוך ${fmtNum(t.steps)}`)}
             {tile('תוספים', `${supTaken}/${sups.length}`)}
           </div>
+        </div>
+      )}
+
+      <div class="actions" style={{ marginBottom: '12px' }}>
+        <a class="btn" href="#/today">רשום את היום</a>
+        <a class="btn" href="#/workout">{active ? 'המשך אימון' : 'התחל אימון'}</a>
+        <a class="btn" href="#/nutrition">רשום ארוחה</a>
+        <button class="btn" onClick={async () => { const prev = await addWater(today, 250); showToast('+250 מ"ל', () => updateDayLog(today, { waterMl: prev }).then(() => undefined)); }}>+ מים</button>
+      </div>
+
+      {(!profileDone || !hasTargets || !exported || !testDone) && (
+        <>
+          <h2>להתחיל</h2>
+          <div class="list">
+            <a href="#/settings/profile"><span class="grow">פרופיל: מין, תאריך לידה, גובה</span>{profileDone && <span class="done">✓</span>}</a>
+            <a href="#/settings/targets"><span class="grow">יעדים בעזרת המחשבון</span>{hasTargets && <span class="done">✓</span>}</a>
+            {testReady === 0 ? (
+              <a href="#/workout"><span class="grow">בדיקה ראשונה: תוכנית יסודות או מבחן פתיחה</span></a>
+            ) : (
+              <a href="#/workout/test"><span class="grow">מבחן פתיחה ({testReady}/{STRENGTH_FAMILIES.length})</span>{testDone && <span class="done">✓</span>}</a>
+            )}
+            <a href="#/settings/backup"><span class="grow">גיבוי ראשון</span>{exported && <span class="done">✓</span>}</a>
+          </div>
+        </>
+      )}
+
+      <SuggestionsList />
+
+      {summary && (
+        <div class="card sugg">
+          <h2>סיכום שבועי · {formatDate(summary.weekStart)}</h2>
+          <div class="stats two" style={{ marginBottom: '10px' }}>
+            {tile('אימונים', String(summary.workoutsDone))}
+            {tile('משקל מגמה', summary.trendChange === null ? '—' : fmtDelta(summary.trendChange), 'ק"ג בשבוע')}
+            {tile('עמידה ביעדים', summaryChecks?.pct === null || !summaryChecks ? '—' : `${summaryChecks.pct}%`)}
+            {tile('שיאים חדשים', String(summary.newPRs.length))}
+          </div>
+          {summary.volume.map((v) => (
+            <div class="row small" key={v.muscle}>
+              <span>{MUSCLES[v.muscle as MuscleId].name}</span>
+              <span class="num">{fmtNum(v.sets, 1)} {summary.foundation ? '' : v.sets < VOLUME_MIN ? '↓ מתחת ליעד' : v.sets > VOLUME_MAX ? '↑ מעל היעד' : '✓'}</span>
+            </div>
+          ))}
+          {summary.foundation && <p class="small muted" style={{ margin: '6px 0 0' }}>תוכנית יסודות: הנפח נמוך בכוונה, בלי השוואה ליעד 10–16 (R-BEG-5)</p>}
+          {summary.newPRs.length > 0 && <p class="small" style={{ marginTop: '8px' }}>🏅 {summary.newPRs.map((p) => `${p.name} ${p.value}`).join(' · ')}</p>}
+        </div>
+      )}
+
+      {phase && (
+        <div class="card">
+          <div class="row">
+            <h2 style={{ margin: 0 }}>שלב נוכחי: {PHASE_LABELS[phase.type]}</h2>
+            <span class="small muted">מ-{formatDate(phase.startDate)}</span>
+          </div>
+          <p class="small" style={{ margin: '6px 0 0' }}>{fmtNum(phaseCaloriesOn(phase, today))} קק"ל · יעד {fmtDelta(phase.weeklyRateKg)} ק"ג לשבוע</p>
         </div>
       )}
 

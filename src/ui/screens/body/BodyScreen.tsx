@@ -12,8 +12,6 @@ import { useLive } from '../../hooks';
 import { CIRC_LABELS, fmtDelta, fmtNum } from '../../labels';
 import { LineChart, type Pt } from '../../components/LineChart';
 import { BodyTabs } from './BodyTabs';
-import { getRankTimeline } from '../../../data/rank';
-import { Avatar } from '../../components/Avatar';
 
 type Metric = 'weight' | 'bodyFat' | 'lean' | 'fat' | Circumference;
 const METRIC_LABELS: Record<Metric, string> = { weight: 'משקל', bodyFat: 'אחוז שומן', lean: 'מסה רזה', fat: 'מסת שומן', ...CIRC_LABELS };
@@ -30,10 +28,10 @@ export function metricOf(m: BodyMeasurement, k: Metric): number | null {
 const unitOf = (k: Metric) => (k === 'bodyFat' ? '%' : k === 'weight' || k === 'lean' || k === 'fat' ? 'ק"ג' : 'ס"מ');
 
 export function BodyScreen() {
-  const data = useLive(async () => ({ ms: await listMeasurements(), logs: await listDayLogs(), timeline: await getRankTimeline() }));
+  const data = useLive(async () => ({ ms: await listMeasurements(), logs: await listDayLogs() }));
   const [metric, setMetric] = useState<Metric>('weight');
   if (!data) return null;
-  const { ms, logs, timeline } = data;
+  const { ms, logs } = data;
   const today = clock.today();
   const last = ms[ms.length - 1];
   const idx = ms.length - 1;
@@ -106,28 +104,6 @@ export function BodyScreen() {
             </select>
           </label>
           {hasChart ? <LineChart series={chartSeries} raw={raw} label={metric === 'weight' ? 'משקל מגמה' : METRIC_LABELS[metric]} unit={unitOf(metric)} /> : <p class="small muted">צריך לפחות שתי מדידות כדי להציג גרף.</p>}
-        </div>
-      )}
-
-      {timeline.length > 0 && (
-        <div class="card">
-          <h2>הדמות לאורך הזמן</h2>
-          <div class="avatar-strip" ref={(el) => {
-            // פותחים על הדמות האחרונה (בכיוון ימין-לשמאל זה הקצה השמאלי), בלי להזיז את העמוד
-            if (el && !el.dataset.scrolled) {
-              el.scrollLeft = -el.scrollWidth;
-              el.dataset.scrolled = '1';
-            }
-          }}>
-            {timeline.map((t) => (
-              <div class="avatar-cell" key={t.date}>
-                <Avatar body={t.rank.body} strength={t.rank.strength} size={64} label={`${formatDate(t.date)}: ${t.rank.name ?? ''}`} />
-                <div class="small num">{formatDate(t.date)}</div>
-                <div class="small muted">{t.rank.rank !== null ? `דרגה ${t.rank.rank}` : ''}</div>
-              </div>
-            ))}
-          </div>
-          <p class="small muted" style={{ margin: '8px 0 0' }}>מבנה הגוף לפי אחוז השומן, השרירים לפי הרמות בסולמות (R-RANK)</p>
         </div>
       )}
 

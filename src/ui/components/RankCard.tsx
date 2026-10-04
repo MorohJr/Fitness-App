@@ -1,13 +1,15 @@
 // כרטיס הדמות (R-RANK): הדמות, הדרגה, ומה חסר לדרגה הבאה
 import type { Rank } from '../../domain/rules/R-RANK';
 import { RANK_NAMES } from '../../domain/rules/R-RANK';
-import { Avatar } from './Avatar';
 import { fmtNum } from '../labels';
 
 export function RankCard({ rank }: { rank: Rank }) {
   return (
     <div class="card rank-card">
-      <Avatar body={rank.body} strength={rank.strength} size={96} label={rank.name ? `הדמות: ${rank.name}` : 'הדמות'} />
+      {/* R-RANK-4 (2.12): מקום ריק לדמות שתיבחר בהמשך */}
+      <div class="rank-slot" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="7" r="3.5" /><path d="M5 21c0-4 3-7 7-7s7 3 7 7" /></svg>
+      </div>
       <div class="grow">
         <div class="label">דרגה</div>
         {rank.rank !== null ? (
