@@ -26,7 +26,8 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+html, body { margin: 0; padding: 0; background: var(--bg); }
+body { overscroll-behavior-y: none; }
 body {
   background: var(--bg);
   color: var(--text);
@@ -41,18 +42,20 @@ a { color: var(--accent-ink); }
 .num, .stat .v, .big, input[type='number'] { font-variant-numeric: tabular-nums; }
 
 /*
- * מעטפת קבועה: רק אזור התוכן גולל, כך שהוא לא גולל מתחת לשעון ולסוללה.
- * הניווט מוצמד לתחתית המסך (2.13), והתוכן גולל מתחתיו.
+ * מעטפת (2.13): כל העמוד גולל, כמו ב-Stay Focus. בלי "נעילה" של העמוד,
+ * כי באייפון היא גורמת לחישוב שגוי של תחתית המסך.
+ * הניווט מוצמד לתחתית, ופס בצבע הרקע מסתיר את מה שגולל מתחת לשעון ולסוללה.
  */
 .app {
-  position: fixed; inset: 0;
-  display: flex; flex-direction: column;
+  min-height: 100dvh;
   padding-top: env(safe-area-inset-top);
   background: var(--bg);
 }
+.app::before {
+  content: ''; position: fixed; top: 0; inset-inline: 0; z-index: 20;
+  height: env(safe-area-inset-top); background: var(--bg);
+}
 .main-scroll {
-  flex: 1; min-height: 0;
-  overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain;
   /* התוכן גולל מתחת לניווט המוצמד, אז משאירים לו מקום בסוף */
   padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
 }
@@ -93,9 +96,10 @@ p { margin: 0 0 10px; }
 .nav a[aria-current='page'] { color: var(--accent); font-weight: 700; }
 .ico { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 @media (min-width: 900px) {
-  .app { flex-direction: row; }
+  .app { display: flex; flex-direction: row; }
+  .main-scroll { flex: 1; min-width: 0; }
   .nav {
-    position: static; order: 0; height: 100%; width: 210px; padding: 20px 10px; overflow-y: auto; background: var(--bg); -webkit-backdrop-filter: none; backdrop-filter: none;
+    position: sticky; top: 0; order: 0; height: 100dvh; width: 210px; padding: 20px 10px; overflow-y: auto; background: var(--bg); -webkit-backdrop-filter: none; backdrop-filter: none;
     grid-template-columns: 1fr; grid-auto-rows: 50px; gap: 4px; align-content: start;
     border-top: 0; border-inline-end: 1px solid var(--border);
   }
@@ -285,7 +289,7 @@ video.scanner { width: 100%; border-radius: var(--radius); background: #000; asp
 .plan-row .grow { flex: 1; min-width: 0; }
 .plan-row .nm { font-weight: 700; direction: ltr; unicode-bidi: plaintext; text-align: right; }
 .plan-row .sub { font-size: .78rem; color: var(--muted); }
-.runbar { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 8px 0 10px; margin: -14px 0 10px; border-bottom: 1px solid var(--border); }
+.runbar { position: sticky; top: env(safe-area-inset-top); z-index: 5; background: var(--bg); padding: 8px 0 10px; margin: -14px 0 10px; border-bottom: 1px solid var(--border); }
 .runbar .timer { font-size: 1.6rem; }
 .rest { background: var(--accent); color: var(--on-accent); border-radius: var(--radius); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; margin-top: 8px; font-weight: 800; }
 .rest .timer { font-size: 1.8rem; color: var(--on-accent); }
