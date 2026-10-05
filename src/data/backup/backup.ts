@@ -5,6 +5,7 @@ import { clock } from '../clock';
 import { setMeta } from '../repos/meta';
 import { migrateBackup, type BackupData } from './migrate';
 import { assertNotDemo, isDemoMode } from '../demo/state';
+import { resetOnboarding } from '../onboarding';
 
 type Row = Record<string, unknown>;
 const UNDO_KEY = 'preImport';
@@ -131,6 +132,8 @@ export async function deleteAllData(): Promise<void> {
   const snapshot = await readAllTables(true);
   await db.undo.put({ key: UNDO_KEY, createdAt: clock.iso(), tables: snapshot, reason: 'delete' } as never);
   await writeTables({}, true);
+  // R-ONB-1: אחרי מחיקה מסך הפתיחה מופיע שוב
+  await resetOnboarding();
 }
 
 /** כמה רשומות פעילות יש בכל טבלה (תצוגה במסך הגיבוי) */

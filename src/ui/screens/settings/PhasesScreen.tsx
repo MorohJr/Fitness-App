@@ -1,5 +1,6 @@
 // שלבים (4.1)
 import { useState } from 'preact/hooks';
+import { PHASE_DEFAULT_RATE } from '../../../domain/rules/R-ONB';
 import type { Phase, PhaseInput, PhaseType } from '../../../domain/types';
 import { clock } from '../../../data/clock';
 import { checkPhase, deletePhase, listPhases, restorePhase, savePhase, setPhaseEnd } from '../../../data/repos/phases';
@@ -16,7 +17,8 @@ import { BackLink, DateField, ErrorList, NumberField, Segmented } from '../../co
 import { showToast } from '../../store';
 import { Calculator } from './Calculator';
 
-const DEFAULT_RATE: Record<PhaseType, number> = { cut: -0.5, bulk: 0.25, recomp: 0, maintain: 0 };
+// ברירת המחדל במקום אחד (E3), גם לאשף הפתיחה
+const DEFAULT_RATE = PHASE_DEFAULT_RATE;
 
 function status(p: Phase, today: string) {
   if (p.startDate > today) return <span class="badge">עתידי</span>;
