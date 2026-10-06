@@ -5,6 +5,7 @@ import { NumberField } from '../../components/Fields';
 import { Icon, type IconName } from '../../components/Icon';
 import { version } from '../../../../package.json';
 import { SCHEMA_VERSION } from '../../../data/db';
+import { restartOnboarding } from '../../../data/onboarding';
 
 const ITEMS: { to: string; icon: IconName; label: string }[] = [
   { to: '/settings/profile', icon: 'user', label: 'פרופיל' },
@@ -54,6 +55,7 @@ export function SettingsHome() {
           </div>
         </>
       )}
+      <button class="btn block" style={{ marginTop: '16px' }} onClick={() => restartOnboarding()}>מסך הפתיחה (הסבר ושאלות מחדש)</button>
       <p class="small muted" style={{ marginTop: '16px' }}>גרסה {version} · מבנה נתונים {SCHEMA_VERSION}</p>
     </div>
   );

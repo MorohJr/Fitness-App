@@ -22,6 +22,8 @@ import { ExerciseScreen } from './screens/workout/ExerciseScreen';
 import { NewExerciseScreen } from './screens/workout/NewExerciseScreen';
 import { OpeningTestScreen } from './screens/workout/OpeningTestScreen';
 import { FoundationScreen } from './screens/workout/FoundationScreen';
+import { OnboardingScreen } from './screens/OnboardingScreen';
+import { getOnboarding } from '../data/onboarding';
 import { BodyScreen } from './screens/body/BodyScreen';
 import { InjuriesScreen } from './screens/body/InjuriesScreen';
 import { MeasureScreen } from './screens/body/MeasureScreen';
@@ -102,9 +104,20 @@ function screenFor(path: string) {
 export function App() {
   const path = useRoute();
   const profile = useLive(getProfile);
+  const onb = useLive(getOnboarding);
   useEffect(() => {
     if (profile) applyTheme(profile.settings.themeMode);
   }, [profile?.settings.themeMode]);
+
+  // R-ONB-1: מסך הפתיחה במקום האפליקציה, בלי ניווט
+  if (onb?.show) {
+    return (
+      <div class="app">
+        <main class="main"><OnboardingScreen step={onb.step} goal={onb.goal} /></main>
+        <Toast />
+      </div>
+    );
+  }
 
   return (
     <div class="app">
