@@ -132,9 +132,9 @@ export async function workoutsOn(date: D): Promise<Workout[]> {
   return alive((await getDb().data('workouts').where('date').equals(date).toArray()) as Workout[]);
 }
 
-/** אימון רגיל שבביצוע (אם יש) */
+/** אימון שבביצוע (אם יש), רגיל או מבחן (R-TST-7) */
 export async function activeWorkout(): Promise<Workout | undefined> {
-  return alive((await getDb().data('workouts').toArray()) as Workout[]).find((w) => w.status === 'inProgress' && w.kind === 'regular');
+  return alive((await getDb().data('workouts').toArray()) as Workout[]).find((w) => w.status === 'inProgress');
 }
 
 export async function listWorkoutExercises(workoutId: string): Promise<WorkoutExercise[]> {

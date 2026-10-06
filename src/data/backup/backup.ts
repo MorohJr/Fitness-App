@@ -3,7 +3,6 @@ import { strFromU8, strToU8, unzipSync, zipSync, type Zippable } from 'fflate';
 import { DATA_TABLE_NAMES, SCHEMA_VERSION, getDb, type DataTableName } from '../db';
 import { clock } from '../clock';
 import { setMeta } from '../repos/meta';
-import { clearTestSession } from '../repos/testSession';
 import { migrateBackup, type BackupData } from './migrate';
 import { assertNotDemo, isDemoMode } from '../demo/state';
 import { resetOnboarding } from '../onboarding';
@@ -117,8 +116,6 @@ export async function importBackup(preview: ImportPreview): Promise<void> {
       .map((r) => ({ ...r, blob: new Blob([preview.photoFiles[r.id as string] as BlobPart], { type: 'image/jpeg' }) }));
   }
   await writeTables(tables, hasPhotos);
-  // R-TST-6: מבחן פתוח לא שורד ייבוא
-  await clearTestSession();
 }
 
 export type UndoReason = 'import' | 'delete';
@@ -137,7 +134,6 @@ export async function deleteAllData(): Promise<void> {
   await writeTables({}, true);
   // R-ONB-1: אחרי מחיקה מסך הפתיחה מופיע שוב
   await resetOnboarding();
-  await clearTestSession();
 }
 
 /** כמה רשומות פעילות יש בכל טבלה (תצוגה במסך הגיבוי) */

@@ -6,7 +6,7 @@ import { evaluate } from '../../../domain/rules/R-PRG';
 import { setValues } from '../../../domain/engine/history';
 import { formatDate } from '../../../domain/calc/dates';
 import { useLive } from '../../hooks';
-import { DAY_TYPE_LABELS, LOCATION_LABELS, MEASURE_UNIT } from '../../labels';
+import { DAY_TYPE_LABELS, LOCATION_LABELS, MEASURE_UNIT, STATUS_EMOJI, STATUS_LABELS } from '../../labels';
 import { BackLink } from '../../components/Fields';
 import { SuggestionsList } from '../../components/Suggestions';
 
@@ -43,11 +43,11 @@ export function WorkoutSummary({ id }: { id: string }) {
           <div class="card" key={we.id}>
             <div class="row">
               <strong class="en">{we.exerciseName}</strong>
-              {we.role === 'technique' ? <span class="tag">טכניקה</span> : out ? <span class={`badge${out === 'achieved' ? ' accent' : out === 'missed' ? ' warn' : ''}`}>{OUT[out]}</span> : <span class="badge">לא בוצע</span>}
+              {w.kind === 'test' && we.statusAtTime ? <span class="badge accent">{STATUS_EMOJI[we.statusAtTime]} {STATUS_LABELS[we.statusAtTime]}</span> : we.role === 'technique' ? <span class="tag">טכניקה</span> : out ? <span class={`badge${out === 'achieved' ? ' accent' : out === 'missed' ? ' warn' : ''}`}>{OUT[out]}</span> : <span class="badge">לא בוצע</span>}
             </div>
             <p class="small muted" style={{ margin: '6px 0 0' }}>
               יעד {we.targetToday} · בוצע: <span class="num">{vals.map((v) => v.value).join(', ') || '—'}</span> {ex ? MEASURE_UNIT[ex.measure] : ''}
-              {vals.length ? ` · RPE ${vals.map((v) => v.rpe ?? '—').join(', ')}` : ''}
+              {vals.length && w.kind !== 'test' ? ` · RPE ${vals.map((v) => v.rpe ?? '—').join(', ')}` : ''}
             </p>
           </div>
         );

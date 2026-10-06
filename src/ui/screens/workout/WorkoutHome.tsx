@@ -9,7 +9,6 @@ import { recordDecision } from '../../../data/repos/suggestions';
 import { getDeloadContext, getEffectiveDayPlan } from '../../../data/plan';
 import { checkRecoverySwap } from '../../../data/engineChecks';
 import { getFoundationState } from '../../../data/foundation';
-import { getTestSession } from '../../../data/repos/testSession';
 import { FOUNDATION_WEEKS } from '../../../domain/rules/R-BEG';
 import { getDb } from '../../../data/db';
 import { STRENGTH_FAMILIES } from '../../../domain/families';
@@ -36,13 +35,12 @@ export function WorkoutHome() {
   }, []);
   const data = useLive(async () => {
     const [exs, active, profile, plan, dctx, history, found] = await Promise.all([listExercises(), activeWorkout(), getProfile(), getEffectiveDayPlan(today), getDeloadContext(), getHistory(), getFoundationState(today)]);
-    const testSession = await getTestSession(exs);
     const workouts = ((await getDb().data('workouts').toArray()) as Workout[]).filter((w) => !w.deletedAt);
     const lastLoc = workouts.filter((w) => w.kind === 'regular' && w.status === 'completed').sort((a, b) => b.date.localeCompare(a.date))[0]?.location;
     const doneToday = workouts.find((w) => w.kind === 'regular' && w.status === 'completed' && w.date === today);
     const recent = workouts.filter((w) => w.kind === 'regular' && w.status !== 'inProgress').sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
     const vol = weeklyVolume(history, new Map(exs.map((e) => [e.id, e])), startOfWeek(today));
-    return { ready: STRENGTH_FAMILIES.filter((f) => familyReady(exs, f)).length, active, profile, plan, dctx, lastLoc, doneToday, recent, vol, count: exs.length, found, testSession };
+    return { ready: STRENGTH_FAMILIES.filter((f) => familyReady(exs, f)).length, active, profile, plan, dctx, lastLoc, doneToday, recent, vol, count: exs.length, found };
   }, [today]);
   const loc = useStore(locationStore);
   const setLoc = (l: LocationId) => locationStore.set(l);
@@ -51,7 +49,7 @@ export function WorkoutHome() {
   const location: LocationId | null = loc ?? (data ? ((data.lastLoc as LocationId) ?? data.profile?.locations.find((l) => l.enabled)?.id ?? null) : null);
   const planned = useLive(async () => (location ? planWorkout(today, location, likeLast) : null), [today, location, likeLast, data?.plan.templateId, data?.plan.dayType]);
   if (!data?.profile) return null;
-  const { ready, active, profile, plan, dctx, doneToday, recent, vol, count, found, testSession } = data;
+  const { ready, active, profile, plan, dctx, doneToday, recent, vol, count, found } = data;
   const inFoundation = !!(found.active || found.pending);
   const total = STRENGTH_FAMILIES.length;
   const deload = isDeloadWeek(today, dctx);
@@ -70,15 +68,8 @@ export function WorkoutHome() {
 
       <SuggestionsList filter={(s) => (s.type === 'missedWorkout' || s.type === 'recoverySwap') && s.date === today} />
 
-      {testSession && (
-        <div class="card">
-          <h2>{testSession.foundation ? 'בדיקת רמה פתוחה' : 'מבחן פתיחה פתוח'}</h2>
-          <p class="small">משפחה {Math.min(testSession.index + 1, testSession.families.length)} מתוך {testSession.families.length} · נשמרו {testSession.confirmed.length}</p>
-          <a class="btn primary block" href={testSession.foundation ? '#/workout/test-foundation' : '#/workout/test'}>המשך מבחן פתיחה</a>
-        </div>
-      )}
 
-      {ready === 0 && !inFoundation && (
+      {ready === 0 && !inFoundation && !active && (
         <div class="card">
           <h2>איך מתחילים?</h2>
           <p class="small">בלי בדיקה ראשונה אי אפשר לבנות אימון. בחר את הדרך שמתאימה לך:</p>
@@ -109,7 +100,7 @@ export function WorkoutHome() {
         </a>
       )}
 
-      {ready > 0 && ready < total && !inFoundation && !testSession && (
+      {ready > 0 && ready < total && !inFoundation && !active && (
         <div class="card">
           <div class="label">מבחן פתיחה</div>
           <div class="big" style={{ margin: '6px 0' }}>

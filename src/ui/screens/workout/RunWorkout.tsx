@@ -12,6 +12,10 @@ import { ScaleField } from '../../components/Fields';
 import { navigate } from '../../router';
 import { showToast } from '../../store';
 import { beep, keepAwake, rearmOnVisible, unlockAudio } from '../../device';
+import { listInjuries } from '../../../data/repos/injuries';
+import { getProfile } from '../../../data/repos/profile';
+import { usableAt } from '../../../data/repos/testWorkout';
+import { TestExerciseRun, TestFinish } from './TestRun';
 
 const TOTAL_LIMIT_MIN = 90;
 const mmss = (sec: number) => `${Math.floor(sec / 60)}:${String(Math.max(0, Math.floor(sec % 60))).padStart(2, '0')}`;
@@ -215,16 +219,35 @@ function ExerciseRun({ w, we, ex, sets, lastText, lastLoad }: { w: Workout; we: 
   );
 }
 
+// מיקום במסך (לשונית ותרגיל) לכל אימון. נוחות בלבד, ואם האחסון חסום פשוט לא נזכר
+const POS_KEY = 'runPos';
+function readPos(workoutId: string): { tab: string; cur: number } | null {
+  try {
+    const p = JSON.parse(sessionStorage.getItem(POS_KEY) ?? 'null');
+    return p?.id === workoutId ? p : null;
+  } catch {
+    return null;
+  }
+}
+function writePos(workoutId: string, pos: { tab: string; cur: number }): void {
+  try {
+    sessionStorage.setItem(POS_KEY, JSON.stringify({ id: workoutId, ...pos }));
+  } catch {
+    /* בלי זיכרון */
+  }
+}
+
 export function RunWorkout() {
   const data = useLive(async () => {
     const w = await activeWorkout();
     if (!w) return { w: null };
-    const [wes, exs, history] = await Promise.all([listWorkoutExercises(w.id), listExercises(), getHistory()]);
+    const [wes, exs, history, injuries, profile] = await Promise.all([listWorkoutExercises(w.id), listExercises(), getHistory(), listInjuries(), getProfile()]);
     const sets = await listSets(wes.map((x) => x.id));
-    return { w, wes, exs: new Map(exs.map((e) => [e.id, e])), sets, history };
+    return { w, wes, exList: exs, exs: new Map(exs.map((e) => [e.id, e])), sets, history, usable: usableAt(profile, w.location, injuries) };
   });
-  const [tab, setTab] = useState<string>('warmup');
-  const [cur, setCur] = useState(0);
+  // null = עוד לא נבחר: נלקח מהזיכרון של המסך, או מהתרגיל הראשון שלא הושלם
+  const [tabSel, setTabSel] = useState<string | null>(null);
+  const [curSel, setCurSel] = useState<number | null>(null);
   const [finishing, setFinishing] = useState(false);
   const [feeling, setFeeling] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
@@ -245,14 +268,30 @@ export function RunWorkout() {
       </div>
     );
   }
-  const { w, wes, exs, sets, history } = data;
+  const { w, wes, exList, exs, sets, history, usable } = data;
+  // מבחן פתיחה רץ באותו מסך (R-TST-4)
+  const isTest = w.kind === 'test';
   const blocks = ((w.plan as { blocks?: PlannedBlock[] })?.blocks ?? []) as PlannedBlock[];
   const tabs = [
     ...blocks.filter((b) => b.key === 'warmup' || b.key === 'mobility').map((b) => ({ key: b.key, title: b.key === 'warmup' ? 'חימום' : 'מוביליטי' })),
-    ...(wes!.length ? [{ key: 'strength', title: 'כוח' }] : []),
+    ...(wes!.length ? [{ key: 'strength', title: isTest ? 'מבחן' : 'כוח' }] : []),
     ...blocks.filter((b) => !['warmup', 'mobility'].includes(b.key)).map((b) => ({ key: b.key, title: b.title.split(' ')[0] })),
     { key: 'finish', title: 'סיום' }
   ];
+  const setsOfAny = (weId: string) => sets!.some((s) => s.workoutExerciseId === weId);
+  // חזרה מפרטים או מסרטון: ממשיכים מאותה לשונית ותרגיל (R-TST-7)
+  const saved = readPos(w.id);
+  const started = sets!.length > 0 || Object.keys(w.blockMinutes).length > 0;
+  const tab = tabSel ?? saved?.tab ?? (started && wes!.length ? 'strength' : tabs[0].key);
+  const cur = curSel ?? saved?.cur ?? Math.max(0, wes!.findIndex((x) => !setsOfAny(x.id)));
+  const setTab = (t: string) => {
+    setTabSel(t);
+    writePos(w.id, { tab: t, cur });
+  };
+  const setCur = (c: number) => {
+    setCurSel(c);
+    writePos(w.id, { tab, cur: c });
+  };
   const active = tabs.some((t) => t.key === tab) ? tab : tabs[0].key;
   const setsOf = (weId: string) => sets!.filter((s) => s.workoutExerciseId === weId);
   const exDone = (we: WorkoutExercise) => new Set(setsOf(we.id).map((s) => s.setNumber)).size >= we.targetSets;
@@ -287,7 +326,22 @@ export function RunWorkout() {
               </button>
             ))}
           </div>
-          {exs!.get(we.exerciseId) && (
+          {exs!.get(we.exerciseId) && isTest && (
+            <TestExerciseRun
+              key={we.id}
+              we={we}
+              ex={exs!.get(we.exerciseId)!}
+              sets={setsOf(we.id)}
+              exercises={exList!}
+              usable={usable!}
+              onDone={(added) => {
+                if (!added && cur >= wes!.length - 1) setTab('finish');
+                else setCur(cur + 1);
+                window.scrollTo(0, 0);
+              }}
+            />
+          )}
+          {exs!.get(we.exerciseId) && !isTest && (
             <ExerciseRun key={we.id} w={w} we={we} ex={exs!.get(we.exerciseId)!} sets={setsOf(we.id)} lastText={lastFor(we.exerciseId).text} lastLoad={lastFor(we.exerciseId).load} />
           )}
           <div class="actions">
@@ -299,7 +353,9 @@ export function RunWorkout() {
 
       {blocks.filter((b) => b.key === active).map((b) => <BlockView key={b.key} w={w} b={b} />)}
 
-      {active === 'finish' && (
+      {active === 'finish' && isTest && <TestFinish w={w} exs={exs!} />}
+
+      {active === 'finish' && !isTest && (
         <div class="card">
           <h2>סיום אימון</h2>
           <p class="small muted">
