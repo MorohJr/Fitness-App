@@ -4,9 +4,30 @@
     {
       "name": "fitness-dev",
       "runtimeExecutable": "/Users/alex/.local/node/bin/npx",
-      "runtimeArgs": ["vite", "--port", "5173", "--strictPort"],
-      "env": { "PATH": "/Users/alex/.local/node/bin:/usr/bin:/bin" },
+      "runtimeArgs": [
+        "vite",
+        "--port",
+        "5173",
+        "--strictPort"
+      ],
+      "env": {
+        "PATH": "/Users/alex/.local/node/bin:/usr/bin:/bin"
+      },
       "port": 5173
+    },
+    {
+      "name": "fitness-dev-alt",
+      "runtimeExecutable": "/Users/alex/.local/node/bin/npx",
+      "runtimeArgs": [
+        "vite",
+        "--port",
+        "5174",
+        "--strictPort"
+      ],
+      "env": {
+        "PATH": "/Users/alex/.local/node/bin:/usr/bin:/bin"
+      },
+      "port": 5174
     }
   ]
 }

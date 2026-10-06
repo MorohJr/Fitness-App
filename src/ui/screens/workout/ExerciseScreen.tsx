@@ -12,8 +12,18 @@ import { useLive } from '../../hooks';
 import { LOCATION_LABELS, MEASURE_LABELS, MEASURE_UNIT, STATUS_EMOJI, STATUS_LABELS } from '../../labels';
 import { BackLink } from '../../components/Fields';
 import { showToast } from '../../store';
-import { navigate } from '../../router';
+import { navigate, previousPath } from '../../router';
 import { ExerciseForm, formFromExercise } from './ExerciseForm';
+
+/** חזרה למסך שממנו הגעת (מבחן, אימון), ואם נפתח ישירות: למאגר (R-TST-7) */
+function ExerciseBack() {
+  const p = previousPath();
+  if (p && !p.startsWith('/workout/exercise/') && p !== '/workout/library') {
+    const label = p.startsWith('/workout/test') ? 'חזרה למבחן' : p === '/workout/run' ? 'חזרה לאימון' : 'חזרה';
+    return <BackLink to={p} label={label} />;
+  }
+  return <BackLink to="/workout/library" label="מאגר תרגילים" />;
+}
 
 const muscleNames = (ids: string[]) => ids.map((m) => MUSCLES[m as MuscleId]?.name ?? m).join(', ') || '—';
 
@@ -40,7 +50,7 @@ export function ExerciseScreen({ id }: { id: string }) {
 
   return (
     <div>
-      <BackLink to="/workout/library" label="מאגר תרגילים" />
+      <ExerciseBack />
       <h1 class="en">{ex.name}</h1>
       <div class="chips">
         {ex.status && <span class="badge accent">{STATUS_EMOJI[ex.status]} {STATUS_LABELS[ex.status]}</span>}

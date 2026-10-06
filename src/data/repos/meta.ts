@@ -1,7 +1,7 @@
 // ערכים מקומיים למכשיר (לא בגיבוי)
 import { getDb } from '../db';
 
-export type MetaKey = 'firstLaunchAt' | 'lastExportAt' | 'persistRequested' | 'lastAdjustCheck' | 'lastPurgeAt' | 'demoMode' | 'onboarding' | 'onboardingStep' | 'onboardingGoal';
+export type MetaKey = 'firstLaunchAt' | 'lastExportAt' | 'persistRequested' | 'lastAdjustCheck' | 'lastPurgeAt' | 'demoMode' | 'onboarding' | 'onboardingStep' | 'onboardingGoal' | 'testSession';
 
 export async function getMeta<T = unknown>(key: MetaKey): Promise<T | undefined> {
   const row = await getDb().meta.get(key);
